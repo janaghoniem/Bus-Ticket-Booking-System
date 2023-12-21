@@ -7,8 +7,7 @@ import java.util.Scanner;
 import java.util.InputMismatchException;
 import java.io.File;
 import java.io.PrintWriter;
-import java.io.FileWriter; //to append or not append to file
-//import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.time.LocalDateTime;
@@ -764,6 +763,24 @@ public class Vehicle implements manages<Vehicle> {
             System.out.println("File error: " + e);
         }
       }
+
+    public static void readFromFile() {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(vehicleFile))) {
+            Vehicle.VehicleList.clear(); // Clear the existing data
+            while (true) {
+                try {
+                    Vehicle newVehicle = (Vehicle) ois.readObject();
+                    Vehicle.VehicleList.put(newVehicle.getLicense_plate(), newVehicle);
+                } catch (ClassNotFoundException | IOException e) {
+                    // End of file or other exception, break the loop
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("File error: " + e);
+        }
+    }
+
       
       public boolean isUnique(String tempLP)
       {
