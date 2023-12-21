@@ -28,7 +28,7 @@ public class Vehicle implements manages<Vehicle> {
         MICROBUS
     }
     
-    Scanner scanner = new Scanner(System.in);
+    transient Scanner scanner = new Scanner(System.in);
     private static HashMap<String, Vehicle> VehicleList = new HashMap<>(50);
     private static HashMap<Integer, Integer> AvailibilityMap = new HashMap<>(50);
     private static final File vehicleFile = new File("vehicleFile.txt");
@@ -753,23 +753,15 @@ public class Vehicle implements manages<Vehicle> {
           }
 
       }
+    
       
-      public static void updateFile()
-      {
-        try {
-            if (!vehicleFile.exists()) 
-            {
-                vehicleFile.createNewFile();
+      public static void updateFile() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(vehicleFile))) {
+            for (Vehicle newVehicle : Vehicle.VehicleList.values()) {
+                oos.writeObject(newVehicle);
             }
-
-            try (PrintWriter write = new PrintWriter(new FileWriter(vehicleFile, false))) {
-                for (Vehicle newVehicle : Vehicle.VehicleList.values()) {
-                    write.println(newVehicle);
-                }
-            }
-        } 
-        catch (IOException e) {
-        System.out.println("File error: " + e);
+        } catch (IOException e) {
+            System.out.println("File error: " + e);
         }
       }
       
