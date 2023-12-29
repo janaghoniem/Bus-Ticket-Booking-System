@@ -1,7 +1,9 @@
 
 package project.trial;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,6 +12,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 
 /**
@@ -35,20 +39,27 @@ public class Admin extends Users{
         admins.add(this);
         Salary = 0.0; 
         Bonus = 0;
+        //readUsersFromFile();
+        //readAdminsFromFile();
     }
     
+    @Override
     public double getSalary() {
         return Salary;
     }
 
+    @Override
     public void setSalary(double Salary) {
         this.Salary = Salary;
+       
     }
 
+    @Override
     public int getBonus() {
         return Bonus;
     }
 
+    @Override
     public void setBonus(int Bonus) {
         this.Bonus = Bonus;
     }
@@ -61,37 +72,62 @@ public class Admin extends Users{
         return users;
     }
     
-    public void addUser() {
-    try {
-        System.out.println("Enter user ID:");
-        int id = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character left by nextInt()
+    public static void readUsersFromFile() {
+    try (DataInputStream dis = new DataInputStream(new FileInputStream("user_information.dat"))) {
+        int numUsers = dis.readInt();
+        for (int i = 0; i < numUsers; i++) {
+            int id = dis.readInt();
+            String name = dis.readUTF();
+            String password = dis.readUTF(); // Read password
 
-        System.out.println("Enter user name:");
-        String userName = scanner.nextLine();
-
-        System.out.println("Enter user password:");
-        String password = scanner.nextLine();
-
-        // Check if the user with the given ID already exists
-        boolean existingUser = false;
-        for (Users u : users) {
-            if (u.getID() == id) {
-                existingUser = true;
-                break;
-            }
+            Users user = new Users(id, password, name);
+            users.add(user);
         }
+        System.out.println("User information loaded from file.");
+    } catch (FileNotFoundException e) {
+        // Ignore if the file doesn't exist yet
+    } catch (IOException e) {
+        System.out.println("Error reading user information from file: " + e.getMessage());
+    }
+}
 
-        if (existingUser) {
+public static void saveUsersToFile() {
+    try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("user_information.dat"))) {
+        dos.writeInt(users.size());
+        for (Users user : users) {
+            dos.writeInt(user.getID());
+            dos.writeUTF(user.getName());
+            dos.writeUTF(user.getPassword()); // Save password
+        }
+        System.out.println("User information saved to file.");
+        saveAdminsToFile(); // Save admins after saving users
+    } catch (IOException e) {
+        System.out.println("Error saving user information to file: " + e.getMessage());
+    }
+}
+
+  
+public boolean userExists(int id, String name) {
+    for (Users u : users) {
+        if (u.getID() == id && u.getName().equals(name)) {
+            return true;
+        }
+    }
+    return false;
+}
+public void addUser(int id, String userName, String password) {
+    try {
+        readUsersFromFile();
+        
+
+        if (userExists(id, userName)) {
             throw new RuntimeException("User already exists");
         } else {
             Users newUser = new Users(id, password, userName);
             users.add(newUser);
 
-            // Check if the added user is a regular user and not a guest
-            if (!"guest".equals(newUser.getName())) {
-                Receptionist.storeReceptionistInfo(new Receptionist(newUser.getID(), newUser.getPassword(), newUser.getName()));
-            }
+            Receptionist.storeReceptionistInfo(new Receptionist(newUser.getID(), newUser.getPassword(), newUser.getName()));
+        saveUsersToFile();
 
             System.out.println("User added successfully!");
         }
@@ -99,11 +135,38 @@ public class Admin extends Users{
         System.out.println("Error adding user: " + e.getMessage());
     }
 }
+// Inside the Admin class
+public void editUser(int currentId, String currentName, int newId, String newName) {
+    try {
+        readUsersFromFile();
 
-// Generate random password for guests with specific prefix
+        // Find the user with the current ID and name
+        Optional<Users> userToEdit = users.stream()
+                .filter(u -> u.getID() == currentId && u.getName().equals(currentName))
+                .findFirst();
+
+        if (userToEdit.isPresent()) {
+            // Check if the new ID and name are unique
+            if (!userExists(newId, newName)) {
+                Users editedUser = userToEdit.get();
+                editedUser.setID(newId);
+                editedUser.setName(newName);
+
+                System.out.println("User edited successfully!");
+            } else {
+                throw new RuntimeException("New ID or name already exists. Please choose unique values.");
+            }
+        } else {
+            throw new RuntimeException("User not found.");
+        }
+    } catch (RuntimeException e) {
+        System.out.println("Error editing user: " + e.getMessage());
+    }
+}
+
+
    public static int generateGuestId() {
     Random random = new Random();
-    
     // Generate a 5-digit ID with the first two digits being 22
     int guestId = Integer.parseInt("22" + String.format("%03d", random.nextInt(1000)));
     
@@ -113,8 +176,6 @@ public class Admin extends Users{
 public static String generateGuestPassword() {
     Random random = new Random();
     StringBuilder passwordBuilder = new StringBuilder();
-
-    // Generate a 5-digit password with random integers
     for (int i = 0; i < GUEST_PASSWORD_LENGTH; i++) {
         passwordBuilder.append(random.nextInt(10));
     }
@@ -122,7 +183,7 @@ public static String generateGuestPassword() {
     return passwordBuilder.toString();
 }
 
-  public void removeUser() {
+  /*public void removeUser() {
     try {
         System.out.println("Enter user ID or name to remove:");
         String inputToRemove = scanner.nextLine();
@@ -159,32 +220,75 @@ public static String generateGuestPassword() {
         System.out.println("Error removing user: " + e.getMessage());
     }
 }
+*/
+public boolean findUser(int id, String name) {
+    for (Users currentUser : users) {
+        if (currentUser.getID() == id || currentUser.getName().equals(name)) {
+            return true; // User found
+        }
+    }
+    return false; // User not found
+}
 
+public void removeUser(int id, String name) {
+            readUsersFromFile();
 
-    public void searchUsers() {
+    
     try {
-        System.out.println("Enter search term (ID or Name):");
-        String searchTerm = scanner.nextLine();
+        boolean found = findUser(id, name);
 
-        Optional<Users> foundUser = users.stream()
-                .filter(u -> String.valueOf(u.getID()).equals(searchTerm) || u.getName().equals(searchTerm))
-                .findFirst();
-
-        if (foundUser.isPresent()) {
-            Users userFound = foundUser.get();
-            System.out.println("User found! Details:");
-            System.out.println("ID: " + userFound.getID());
-            System.out.println("Name: " + userFound.getName());
-           // System.out.println("Password: " + userFound.getPassword());
+        if (found) {
+            // Remove the user
+            users.removeIf(currentUser -> currentUser.getID() == id && currentUser.getName().equals(name));
+            System.out.println("User removed successfully!");
         } else {
-            throw new RuntimeException("User not found");
+            System.out.println("User not found.");
+            /*System.out.println("Do you want to return (return) or continue (continue)?");
+            String choice = scanner.nextLine().trim().toUpperCase();
+
+            switch (choice) {
+                case "return": {
+                    return; 
+                }
+                case "continue": {
+                    // Continue with the rest of the method
+                    break;
+                }
+                default:
+                    throw new RuntimeException("Invalid choice");
+            }*/
         }
     } catch (RuntimeException e) {
-        System.out.println("Error searching for user: " + e.getMessage());
+        System.out.println("Error removing user: " + e.getMessage());
     }
 }
 
-    public void addSalary() {
+
+
+public List<Users> searchUsers(String searchTerm) {
+    List<Users> matchingUsers = new ArrayList<>();
+
+    for (Users user : users) {
+        if (String.valueOf(user.getID()).contains(searchTerm) || user.getName().toLowerCase().contains(searchTerm)) {
+            matchingUsers.add(user);
+        }
+    }
+
+    return matchingUsers;
+}
+public void addSalary(int userId, double salary) {
+                readUsersFromFile();
+        super.setSalary(salary);
+        Users.addSalaryToFile(userId, salary); 
+    }
+    
+    public void addBonus(int userId, int bonus) {
+                    readUsersFromFile();
+        super.setBonus(bonus);
+        Users.addBonusToFile(userId, bonus); 
+    }
+
+ /*   public void addSalary() {
         try {
             System.out.println("Enter user ID to add salary:");
             int idToAddSalary = scanner.nextInt();
@@ -249,7 +353,7 @@ public static String generateGuestPassword() {
             System.out.println("Error adding bonus: " + e.getMessage());
         }
     }
-
+*/
 public void displayUserReports(Users currentUser) {
         System.out.println("User Details:");
         System.out.println("ID: " + currentUser.getID());
@@ -271,12 +375,48 @@ public static void displayAdmins() {
             }
         }
     }
+
+
+public static void readAdminsFromFile() {
+    try (DataInputStream dis = new DataInputStream(new FileInputStream("admin_information.dat"))) {
+        int numAdmins = dis.readInt();
+        for (int i = 0; i < numAdmins; i++) {
+            int id = dis.readInt();
+            String name = dis.readUTF();
+            String password = dis.readUTF(); // Read password
+
+            admins.add(new Admin(id, password, name));
+        }
+        System.out.println("Admin information loaded from file.");
+    } catch (FileNotFoundException e) {
+        // Ignore if the file doesn't exist yet
+    } catch (IOException e) {
+        System.out.println("Error reading admin information from file: " + e.getMessage());
+    }
+}
+
+public static void saveAdminsToFile() {
+    try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("admin_information.dat"))) {
+        dos.writeInt(admins.size());
+        for (Admin admin : admins) {
+            dos.writeInt(admin.getID());
+            dos.writeUTF(admin.getName());
+            dos.writeUTF(admin.getPassword()); // Save password
+        }
+        System.out.println("Admin information saved to file.");
+    } catch (IOException e) {
+        System.out.println("Error saving admin information to file: " + e.getMessage());
+    }
+}
+
+
 public static void manageUsers() {
     boolean exitProgram = false;
     Scanner s = new Scanner(System.in);
 
     Admin a = new Admin();
-
+        readUsersFromFile();
+        readAdminsFromFile();
     while (!exitProgram) {
         System.out.println("Choose an option:");
             System.out.println("1. Add Admin");
@@ -321,25 +461,25 @@ public static void manageUsers() {
 
                     // Set name to "receptionist" for receptionist users
                     a = new admin(receptionistId, receptionistPassword, receptionistName);*/
-                    a.addUser();
+                   // a.addUser();
                     break;
                 }
                 case 3:
-                    a.removeUser();
+                    //a.removeUser();
                     break;
                 case 4:
-                    a.searchUsers();
+//                    a.searchUsers();
                     break;
                 case 5: {
                     if ("admin".equals(a.getName())) {
                         System.out.println("Admins cannot have a salary.");
                     } else {
-                        a.addSalary();
+//                        a.addSalary();
                     }
                     break;
                 }
                 case 6:
-                    a.addBonus();
+                   // a.addBonus();
                     break;
                 case 7: {
                     // Display user details
@@ -377,21 +517,6 @@ public static void manageUsers() {
                     System.out.println("Invalid choice. Please try again.");
             }}
 }
-private void saveUsersToFile() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("user_information.txt"))) {
-            for (Users currentUser : users) {
-                writer.write("ID: " + currentUser.getID() + ", Name: " + currentUser.getName());
-                if (!"guest".equals(currentUser.getName())) {
-                    writer.write(", Salary: " +getSalary());
-                }
-                writer.newLine();
-            }
-            System.out.println("User information saved to file.");
-        } catch (IOException e) {
-            System.out.println("Error saving user information to file: " + e.getMessage());
-        }
-    }
-
 /*case 1 -> {
                 System.out.println("Choose user type:");
                 System.out.println("1. Regular User");
