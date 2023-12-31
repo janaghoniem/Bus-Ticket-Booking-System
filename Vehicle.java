@@ -3,21 +3,41 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package project.trial;
+import java.io.EOFException;
 import java.util.Scanner;
 import java.util.InputMismatchException;
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.io.Serializable;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 /**
  *
  * @author jana
  */
-public class Vehicle implements manages<Vehicle> {
+public class Vehicle implements manages<Vehicle>, Serializable {
     
     public enum vehicleCategory
     {
@@ -103,142 +123,53 @@ public class Vehicle implements manages<Vehicle> {
     @Override
     public void add()
     {
-        String again = "yes";
-        boolean continueprocess = true;
-        while(again.equalsIgnoreCase("yes"))
-        {
-            Vehicle newVehicle = new Vehicle();
-            while(true)
-            {
-                System.out.print("Enter your vehicle's License plate: ");
-                String tempLP = scanner.next(); 
-                if(!isUnique(tempLP))
-                {
-                    System.out.println("Vehicle already exists. Would you like to try again? ");
-                    String response = scanner.next();
-                    if(!response.equalsIgnoreCase("yes"))
-                    {
-                        continueprocess = false;
-                        break;
-                    }
-                }
-                else
-                {
-                    newVehicle.setLicense_plate(tempLP);
-                    break;
-                }
-            }
-            if(!continueprocess)
-            {
-                break;
-            }
-            System.out.print("Enter your vehicle's category (MEGABUS, BUS, MINIBUS, MICROBUS): ");      //NEED WAY TO LIMIT CATEGORIES TO THREE: MEGABUS, BUS, MINIBUS (MAYBE ENUM LIKE ROAA)
-            while(true)
-            {
-                try
-                {
-                    newVehicle.setCategory(vehicleCategory.valueOf(scanner.next().toUpperCase()));
-                    break;
-                }
-                catch(IllegalArgumentException e)
-                {
-                    System.out.println("Invalid Category. Please choose from the following categories (MEGABUS, BUS, MINIBUS, MICROBUS): ");
-                }
-            }
-            
-            scanner.nextLine();            
-            System.out.print("Enter your vehicle's bus driver's name: ");
-            newVehicle.setBusDriver_name(scanner.nextLine());            
-            while(true)
-            {
-                try
-                {
-                    System.out.print("Enter your vehicle's Number_of_seats: ");
-                    newVehicle.setNumber_of_seats(scanner.nextInt());
-                    break;
-                }
+        if (VehicleList.containsKey(this.License_plate)) {
+            Alert confirmation = new Alert(AlertType.CONFIRMATION);
+            confirmation.setTitle("Duplicate License Plate");
+            confirmation.setHeaderText(null);
+            confirmation.setContentText("A vehicle with the same license plate already exists. Do you want to replace its information?");
 
-                catch(InputMismatchException e)
-                {
-                    System.out.print("Invalid input. Please enter an integer value: ");
-                    scanner.next();
-                }         
-            }
-            while(true)
-            {
-                try
-                {
-                    System.out.print("Enter your vehicle's ticket price: ");
-                    newVehicle.setTicket_price(scanner.nextDouble()); 
-                    break;
-                }
+            ButtonType replaceButton = new ButtonType("Replace");
+            ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-                catch(InputMismatchException e)
-                {
-                    System.out.print("Invalid input. Please enter a numerical value: ");
-                    scanner.next();
-                }   
-            }
-        
-            Vehicle.VehicleList.put(newVehicle.License_plate, newVehicle);
-            System.out.println("Vehicle added successfully.");
-            System.out.println("Would you like to add another vehicle?");
-            again = scanner.next();
-            while(!again.equalsIgnoreCase("yes") && !again.equalsIgnoreCase("no"))
-            {
-                System.out.println("Invalid input. Please enter 'yes' if you would like to continue adding vehicles or 'no' if you would like to stop: ");
-                again = scanner.next();
-            }
+            confirmation.getButtonTypes().setAll(replaceButton, cancelButton);
+
+            confirmation.showAndWait().ifPresent(response -> {
+                if (response == cancelButton) {
+                    return;
+                }
+            });
         }
+        
+        VehicleList.put(this.License_plate, this);
+        System.out.println("Vehicle added successfully.");
+        try {
+            Vehicle.displayVehicles();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Vehicle.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("neshoof kam object 3andena: ");
+        for(Vehicle v: Vehicle.VehicleList.values())
+        {
+            System.out.println(v.License_plate);
+        }
+        updateFile();
     }
+
+
     
     @Override
     public void remove()
     {
-        String again = "yes";
-        if(VehicleList.isEmpty())
-        {
-            System.out.println("No vehicles exist. Would you like to start adding vehicles?");
-            String addresponse = scanner.next();
-            while(!addresponse.equalsIgnoreCase("yes") && !addresponse.equalsIgnoreCase("no"))
-            {
-                System.out.println("Invalid input. Please enter 'yes' if you would like to start adding vehicles or 'no' if you would like to stop: ");
-                addresponse = scanner.next();
-            }            
-        
-            if(addresponse.equalsIgnoreCase("yes"))
-            {
-                this.add();
-                again = "no";
-            }
-        }
            
-        while(again.equalsIgnoreCase("yes") && !VehicleList.isEmpty())
-        {
-            System.out.print("Enter the license plate of the vehicle you want to remove: ");
-            String s = scanner.next();  
-            if(VehicleList.containsKey(s))
-            {
-                VehicleList.remove(s);
-                System.out.println("Vehicle removed successfully.");
-                System.out.println("Would you like to remove another vehicle?");
-                again = scanner.next();      
-                while(!again.equalsIgnoreCase("yes") && !again.equalsIgnoreCase("no"))
-                {
-                    System.out.println("Invalid input. Please enter 'yes' if you would like to continue removing vehicles or 'no' if you would like to stop: ");
-                    again = scanner.next();
-                }            
-            }
-            else
-            {
-                System.out.println("Vehicle doesn't exist. Would you like to try again?");
-                again = scanner.next();
-                if(!again.equalsIgnoreCase("yes"))
-                {
-                    break;
-                }
-            }
+        VehicleList.remove(this.License_plate);
+        System.out.println("Vehicle removed successfully.");
+        try {
+            Vehicle.displayVehicles();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Vehicle.class.getName()).log(Level.SEVERE, null, ex);
         }
+        updateFile();
     }
     
     @Override
@@ -529,32 +460,75 @@ public class Vehicle implements manages<Vehicle> {
       }  
     }
     
-    void displayVehicles()
-    {
-        if(VehicleList.isEmpty())
-        {
-            System.out.println("No vehicles exist. Would you like to start adding vehicles?");
-            String addresponse = scanner.next();
-            while(!addresponse.equalsIgnoreCase("yes") && !addresponse.equalsIgnoreCase("no"))
-            {
-                System.out.println("Invalid input. Please enter 'yes' if you would like to start adding vehicles or 'no' if you would like to stop: ");
-                addresponse = scanner.next();
-            }            
+public static void displayVehicles() throws FileNotFoundException {
+    
+    NewFXMain.vehicleTable.getChildren().clear();
+    
+    for (Vehicle v : VehicleList.values()) {
+        Label licensePlate = new Label(v.getLicense_plate());
+        licensePlate.setTextFill(Color.web("white"));
+        licensePlate.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        licensePlate.setPrefWidth(250);
+        HBox.setHgrow(licensePlate, Priority.ALWAYS);
         
-            if(addresponse.equalsIgnoreCase("yes"))
-            {
-                this.add();
-            }
-        }
+        Label category = new Label(v.getCategory().toString());
+        category.setTextFill(Color.web("white"));
+        category.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        category.setPrefWidth(250);
+        HBox.setHgrow(category, Priority.ALWAYS);
         
-        else
-        {
-            for (Vehicle v : VehicleList.values()) 
-            {
-            System.out.println(v);
-            }
-        }
+        Label numberofSeats = new Label(String.valueOf(v.getNumber_of_seats()));
+        numberofSeats.setTextFill(Color.web("white"));
+        numberofSeats.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        numberofSeats.setPrefWidth(250);
+        HBox.setHgrow(numberofSeats, Priority.ALWAYS);
+        
+        Label ticketPrice = new Label(String.valueOf(v.getTicket_price()));
+        ticketPrice.setTextFill(Color.web("white"));
+        ticketPrice.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        ticketPrice.setPrefWidth(250);
+        HBox.setHgrow(ticketPrice, Priority.ALWAYS);        
+
+        Label driverName = new Label(v.getBusDriver_name());
+        driverName.setTextFill(Color.web("white"));
+        driverName.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        driverName.setPrefWidth(250);
+        HBox.setHgrow(driverName, Priority.ALWAYS);
+        
+        //icons
+        Image editicon = new Image(new FileInputStream("/home/jana/Downloads/pen.png"));
+        ImageView editimageView = new ImageView(editicon);
+        editimageView.setFitHeight(30); 
+        editimageView.setPreserveRatio(true); 
+        
+        Image deleteicon = new Image(new FileInputStream("/home/jana/Downloads/bin(3).png"));
+        ImageView deleteimageView = new ImageView(deleteicon);
+        deleteimageView.setFitHeight(30); 
+        deleteimageView.setPreserveRatio(true);         
+
+        Button editButton = new Button();
+        editButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
+        editButton.setGraphic(editimageView);
+        editButton.setOnAction(e -> {
+            // Handle edit action, e.g., open a dialog to edit the vehicle details
+            // You might want to pass the Vehicle object to the edit method
+            // editVehicle(v);
+        });
+
+        Button deleteButton = new Button();
+        deleteButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
+        deleteButton.setGraphic(deleteimageView);
+        deleteButton.setOnAction(e -> {
+            Vehicle vehicle = VehicleList.get(licensePlate.getText());
+            vehicle.remove();
+        });
+
+        HBox tempHBox = new HBox(80,licensePlate, category, numberofSeats, ticketPrice, driverName, new HBox(10,editButton, deleteButton));
+        //tempHBox.setAlignment(Pos.CENTER);
+        NewFXMain.vehicleTable.getChildren().add(tempHBox);
     }
+}
+
     
     public static void initializeAvailibilityMap()
     {
@@ -752,44 +726,52 @@ public class Vehicle implements manages<Vehicle> {
           }
 
       }
-    
       
-      public static void updateFile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(vehicleFile))) {
+public static void updateFile() {
+    int i = 0;
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(vehicleFile))) {
             for (Vehicle newVehicle : Vehicle.VehicleList.values()) {
-                oos.writeObject(newVehicle);
+                out.writeObject(newVehicle);
+                i++;
             }
-        } catch (IOException e) {
-            System.out.println("File error: " + e);
-        }
-      }
-
-    public static void readFromFile() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(vehicleFile))) {
-            Vehicle.VehicleList.clear(); // Clear the existing data
-            while (true) {
-                try {
-                    Vehicle newVehicle = (Vehicle) ois.readObject();
-                    Vehicle.VehicleList.put(newVehicle.getLicense_plate(), newVehicle);
-                } catch (ClassNotFoundException | IOException e) {
-                    // End of file or other exception, break the loop
-                    break;
-                }
-            }
+            System.out.println("number of objects written into file: " + i);
         } catch (IOException e) {
             System.out.println("File error: " + e);
         }
     }
 
-      
-      public boolean isUnique(String tempLP)
-      {
+public static void readFromFile() {
+    int i = 0;
+    try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(vehicleFile))) {
+        while (true) {
+            try {
+                Vehicle newVehicle = (Vehicle) in.readObject();
+                VehicleList.put(newVehicle.License_plate, newVehicle);
+                displayVehicles();
+                i++;
+            } catch (EOFException e) {
+                // End of file reached
+                System.out.println("number of objects read from file into hashmap: " + i);
+                break;
+            } catch (ClassNotFoundException | IOException e) {
+                System.out.println("Error reading object: " + e);
+                break;
+            }
+        }
+    } catch (IOException e) {
+        System.out.println("File error: " + e);
+    }
+}
+
+
+public boolean isUnique(String tempLP)
+    {
        for(Vehicle v: VehicleList.values())
        {
            if(tempLP.equalsIgnoreCase(v.License_plate))
            {
              return false;
-            }
+           }
         }
         return true;
       }
