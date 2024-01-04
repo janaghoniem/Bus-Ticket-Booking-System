@@ -67,10 +67,9 @@ public class NewFXMain extends Application {
         
 
         //FOR TESTING - CHANGE THE PARAMETERS IF YOU NEED TO TEST YOUR OWN SCENE
-        Scene scene = vehicleScene;
         
         primaryStage.setTitle("Bus-Ticket Booking System");
-        primaryStage.setScene(scene);
+        primaryStage.setScene(vehicleScene);
         primaryStage.show();
         
     }
