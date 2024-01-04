@@ -20,19 +20,36 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.util.Duration;
 /**
  *
  * @author jana
@@ -50,7 +67,13 @@ public class Vehicle implements manages<Vehicle>, Serializable {
     transient Scanner scanner = new Scanner(System.in);
     private static HashMap<String, Vehicle> VehicleList = new HashMap<>(50);
     private static HashMap<Integer, Integer> AvailibilityMap = new HashMap<>(50);
-    private static final File vehicleFile = new File("vehicleFile.txt");
+        
+    //NEEDED FOR MANAGE VEHICLES
+    public static GridPane addlayout = new GridPane();
+    private static boolean slidingLayoutShown = false;
+    private static HBox listlabels = new HBox();
+        
+    private static final File vehicleFile = new File("vehicleFile.dat");
     private String License_plate;
     private vehicleCategory Category;
     private int Number_of_seats;
@@ -119,7 +142,187 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         this.BusDriver_name = BusDriver_name;
     }
     
+    public static void listlabelsinitialization()
+    {
+        Label licensePlate = new Label("LICENSE PLATE");
+        licensePlate.setTextFill(Color.web("#ffb000"));
+        licensePlate.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        licensePlate.setPrefWidth(250);
+        HBox.setHgrow(licensePlate, Priority.ALWAYS);
+        
+        Label category = new Label("BUS CATEGORY");
+        category.setTextFill(Color.web("#ffb000"));
+        category.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        category.setPrefWidth(250);
+        HBox.setHgrow(category, Priority.ALWAYS);
+        
+        Label numberofSeats = new Label("NUMBER OF SEATS");
+        numberofSeats.setTextFill(Color.web("#ffb000"));
+        numberofSeats.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        numberofSeats.setPrefWidth(250);
+        HBox.setHgrow(numberofSeats, Priority.ALWAYS);
+        
+        Label ticketPrice = new Label("PRICE PER SEAT");
+        ticketPrice.setTextFill(Color.web("#ffb000"));
+        ticketPrice.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));    
+        ticketPrice.setPrefWidth(250);
+        HBox.setHgrow(ticketPrice, Priority.ALWAYS);
+
+        Label driverName = new Label("DRIVER'S NAME");
+        driverName.setTextFill(Color.web("#ffb000"));
+        driverName.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        driverName.setPrefWidth(250);
+        HBox.setHgrow(driverName, Priority.ALWAYS);
+            
+        //HBox
+        listlabels.getChildren().addAll(licensePlate, category, numberofSeats, ticketPrice, driverName);
+        listlabels.setSpacing(70);
+    }
     
+    
+    public static void addlayoutInitialization()
+    {
+        Label LicensePlate = new Label("License Plate:");
+        LicensePlate.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        TextField LicensePlateString = new TextField();
+        LicensePlateString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-font-family: 'Helvetica World';");
+            
+        Label Category = new Label("Category:");
+        Category.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        ObservableList oo = FXCollections.observableArrayList("MicroBus", "MiniBus", "Bus", "MegaBus");
+        ComboBox CategoryString = new ComboBox(oo);       
+        CategoryString.setValue("Bus");
+            
+        Label NumberofSeats = new Label("Number of Seats:");
+        NumberofSeats.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        Spinner<Integer> seatsspinner = new Spinner<>();
+        SpinnerValueFactory<Integer> seatsvalueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 100, 40);
+        seatsspinner.setValueFactory(seatsvalueFactory);
+            
+        Label TicketPrice = new Label("Ticket Price:");
+        TicketPrice.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        Spinner<Integer> pricespinner = new Spinner<>();
+        SpinnerValueFactory<Integer> pricevalueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(5, 100, 20);
+        pricespinner.setValueFactory(pricevalueFactory);        
+            
+        Label DriverName = new Label("Driver's Name:");
+        DriverName.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        TextField DriverNameString = new TextField();
+        DriverNameString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-font-family: 'Helvetica World';");
+            
+        Label DatePurchased = new Label("Date Purchased");
+        DatePurchased.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        DatePicker datePurchased = new DatePicker();
+            
+        Button saveButton = new Button("SAVE");
+        saveButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
+        saveButton.setPrefWidth(100);
+        Button cancelButton = new Button("CANCEL");
+        cancelButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
+        cancelButton.setPrefWidth(100);
+        Button clearButton = new Button("CLEAR");
+        clearButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
+        clearButton.setPrefWidth(100);            
+            
+        addlayout.add(LicensePlate, 0, 0);
+        addlayout.add(LicensePlateString, 1, 0);
+        addlayout.add(Category, 2, 0);
+        addlayout.add(CategoryString, 3, 0);
+        addlayout.add(NumberofSeats, 0, 1);
+        addlayout.add(seatsspinner, 1, 1);
+        addlayout.add(TicketPrice, 2, 1);
+        addlayout.add(pricespinner, 3, 1);
+        addlayout.add(DriverName, 0, 2);
+        addlayout.add(DriverNameString, 1, 2);
+        addlayout.add(DatePurchased, 2, 2);
+        addlayout.add(datePurchased, 3, 2);
+        addlayout.add(saveButton, 0, 3);
+        addlayout.add(clearButton, 1, 3);           
+        addlayout.add(cancelButton, 2, 3);
+        addlayout.setVisible(false);
+        
+        addlayout.setHgap(30);
+        addlayout.setVgap(10);
+        addlayout.setAlignment(Pos.TOP_LEFT);
+        
+        addlayout.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-padding: 10px;");
+                
+        saveButton.setOnAction(e -> {
+            Vehicle newVehicle = new Vehicle();
+            newVehicle.setLicense_plate(LicensePlateString.getText());
+            newVehicle.setCategory(Vehicle.vehicleCategory.valueOf(CategoryString.getValue().toString().toUpperCase()));
+            newVehicle.setNumber_of_seats(seatsspinner.getValue());
+            newVehicle.setTicket_price(pricespinner.getValue());
+            newVehicle.setBusDriver_name(DriverNameString.getText());
+            newVehicle.add();
+        });
+            
+        clearButton.setOnAction(e -> {
+            LicensePlateString.clear();
+            DriverNameString.clear();
+        });
+            
+        cancelButton.setOnAction(e -> 
+        {
+            slideUp();
+        });
+        
+        
+        slideDown();
+    }
+    
+public static void slideDown() {
+    if(!slidingLayoutShown)
+    {
+        Duration duration = new Duration(500);
+        double panelHeight = addlayout.getBoundsInParent().getHeight();
+        Admin.scrollPane.setTranslateY(0);
+
+        // Slide down transition for the panel
+        TranslateTransition slideDownTransition = new TranslateTransition(duration, addlayout);
+        slideDownTransition.setToY(0);
+
+        // Slide down transition for Admin.vehicleTable
+        TranslateTransition slideDownTransition2 = new TranslateTransition(duration, Admin.scrollPane);
+        slideDownTransition2.setToY(panelHeight);
+
+        // Fade in transition for the panel
+        FadeTransition fadeInTransition = new FadeTransition(duration, addlayout);
+        fadeInTransition.setToValue(1.0);
+
+        addlayout.setVisible(true);
+
+        // Play both transitions simultaneously
+        ParallelTransition parallelTransition = new ParallelTransition(slideDownTransition, slideDownTransition2, fadeInTransition);
+        parallelTransition.play();
+        slidingLayoutShown = true;
+    }
+    
+}
+
+public static void slideUp() {
+    if(slidingLayoutShown)
+    {
+        Duration duration = new Duration(300);
+        double panelHeight = addlayout.getBoundsInParent().getHeight();
+
+        TranslateTransition slideUpTransition = new TranslateTransition(duration, addlayout);
+        slideUpTransition.setToY(-panelHeight);
+        TranslateTransition slideUpTransition2 = new TranslateTransition(duration, Admin.scrollPane);
+        slideUpTransition2.setToY(-panelHeight);
+
+        FadeTransition fadeOutTransition = new FadeTransition(duration, addlayout);
+        fadeOutTransition.setToValue(0.0);
+
+        fadeOutTransition.setOnFinished(e -> addlayout.setVisible(false));
+
+        ParallelTransition parallelTransition = new ParallelTransition(slideUpTransition, slideUpTransition2, fadeOutTransition);
+        parallelTransition.play();
+        slidingLayoutShown = false;
+
+    }
+}
+
     @Override
     public void add()
     {
@@ -462,7 +665,9 @@ public class Vehicle implements manages<Vehicle>, Serializable {
     
 public static void displayVehicles() throws FileNotFoundException {
     
-    NewFXMain.vehicleTable.getChildren().clear();
+    listlabelsinitialization();
+    Admin.vehicleTable.getChildren().clear();
+    Admin.vehicleTable.getChildren().add(listlabels);
     
     for (Vehicle v : VehicleList.values()) {
         Label licensePlate = new Label(v.getLicense_plate());
@@ -509,11 +714,58 @@ public static void displayVehicles() throws FileNotFoundException {
         Button editButton = new Button();
         editButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
         editButton.setGraphic(editimageView);
-        editButton.setOnAction(e -> {
-            // Handle edit action, e.g., open a dialog to edit the vehicle details
-            // You might want to pass the Vehicle object to the edit method
-            // editVehicle(v);
-        });
+//        editButton.setOnAction(e -> {
+//        Stage dialogStage = new Stage();
+//        dialogStage.initModality(Modality.WINDOW_MODAL);
+//        dialogStage.initStyle(StageStyle.UTILITY);
+//
+//        Label LicensePlate = new Label("License Plate:");
+//        LicensePlate.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+//        TextField LicensePlateString = new TextField();
+//        LicensePlateString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-font-family: 'Helvetica World';");
+//            
+//        Label Category = new Label("Category:");
+//        Category.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+//        ObservableList oo = FXCollections.observableArrayList("MicroBus", "MiniBus", "Bus", "MegaBus");
+//        ComboBox CategoryString = new ComboBox(oo);       
+//        CategoryString.setValue("Bus");
+//            
+//        Label NumberofSeats = new Label("Number of Seats:");
+//        NumberofSeats.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+//        Spinner<Integer> seatsspinner = new Spinner<>();
+//        SpinnerValueFactory<Integer> seatsvalueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 100, 40);
+//        seatsspinner.setValueFactory(seatsvalueFactory);
+//            
+//        Label TicketPrice = new Label("Ticket Price:");
+//        TicketPrice.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+//        Spinner<Integer> pricespinner = new Spinner<>();
+//        SpinnerValueFactory<Integer> pricevalueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(5, 100, 20);
+//        pricespinner.setValueFactory(pricevalueFactory);        
+//            
+//        Label DriverName = new Label("Driver's Name:");
+//        DriverName.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+//        TextField DriverNameString = new TextField();
+//        DriverNameString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-font-family: 'Helvetica World';");
+//            
+//        Button applyButton = new Button("APPLY");
+//        applyButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
+//        applyButton.setPrefWidth(100);
+//        
+//        applyButton.setOnAction(ev -> 
+//        {
+//            
+//        });
+//        
+//        Button cancelButton = new Button("CANCEL");
+//        cancelButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
+//        cancelButton.setPrefWidth(100);
+//        Button clearButton = new Button("CLEAR");
+//        clearButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
+//        clearButton.setPrefWidth(100);    
+//        }
+                
+
+
 
         Button deleteButton = new Button();
         deleteButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
@@ -522,10 +774,8 @@ public static void displayVehicles() throws FileNotFoundException {
             Vehicle vehicle = VehicleList.get(licensePlate.getText());
             vehicle.remove();
         });
-
         HBox tempHBox = new HBox(80,licensePlate, category, numberofSeats, ticketPrice, driverName, new HBox(10,editButton, deleteButton));
-        //tempHBox.setAlignment(Pos.CENTER);
-        NewFXMain.vehicleTable.getChildren().add(tempHBox);
+        Admin.vehicleTable.getChildren().add(tempHBox);
     }
 }
 
