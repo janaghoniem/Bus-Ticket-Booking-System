@@ -27,6 +27,7 @@ import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -271,57 +272,58 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         slideDown();
     }
     
-public static void slideDown() {
-    if(!slidingLayoutShown)
-    {
-        Duration duration = new Duration(500);
-        double panelHeight = addlayout.getBoundsInParent().getHeight();
-        Admin.scrollPane.setTranslateY(0);
+    public static void slideDown() {
+        if (!slidingLayoutShown) {
+            Duration slideduration = new Duration(300);
+            Duration fadeduration = new Duration(600);
 
-        // Slide down transition for the panel
-        TranslateTransition slideDownTransition = new TranslateTransition(duration, addlayout);
-        slideDownTransition.setToY(0);
+            double panelHeight = addlayout.getBoundsInParent().getHeight();
 
-        // Slide down transition for Admin.vehicleTable
-        TranslateTransition slideDownTransition2 = new TranslateTransition(duration, Admin.scrollPane);
-        slideDownTransition2.setToY(panelHeight);
+            // Slide down transition for the panel
+            TranslateTransition slideDownTransition = new TranslateTransition(slideduration, addlayout);
+            slideDownTransition.setToY(0);
 
-        // Fade in transition for the panel
-        FadeTransition fadeInTransition = new FadeTransition(duration, addlayout);
-        fadeInTransition.setToValue(1.0);
+            // Slide down transition for Admin.vehicleTable
+            TranslateTransition slideDownTransition2 = new TranslateTransition(slideduration, Admin.scrollPane);
+            slideDownTransition2.setToY(0.0);
 
-        addlayout.setVisible(true);
+            // Fade in transition for the panel
+            FadeTransition fadeInTransition = new FadeTransition(fadeduration, addlayout);
+            fadeInTransition.setToValue(1.0);
 
-        // Play both transitions simultaneously
-        ParallelTransition parallelTransition = new ParallelTransition(slideDownTransition, slideDownTransition2, fadeInTransition);
-        parallelTransition.play();
-        slidingLayoutShown = true;
+            addlayout.setVisible(true);
+
+            // Play both transitions simultaneously
+             ParallelTransition parallelTransition = new ParallelTransition(slideDownTransition, slideDownTransition2, fadeInTransition);
+            parallelTransition.play();
+            slidingLayoutShown = true;
+        }
     }
-    
-}
 
-public static void slideUp() {
-    if(slidingLayoutShown)
-    {
-        Duration duration = new Duration(300);
-        double panelHeight = addlayout.getBoundsInParent().getHeight();
+    public static void slideUp() {
+        if (slidingLayoutShown) {
+            Duration slideduration = new Duration(300);
+            Duration fadeduration = new Duration(100);
+            double panelHeight = addlayout.getBoundsInParent().getHeight();
 
-        TranslateTransition slideUpTransition = new TranslateTransition(duration, addlayout);
-        slideUpTransition.setToY(-panelHeight);
-        TranslateTransition slideUpTransition2 = new TranslateTransition(duration, Admin.scrollPane);
-        slideUpTransition2.setToY(-panelHeight);
+            TranslateTransition slideUpTransition = new TranslateTransition(slideduration, addlayout);
+            slideUpTransition.setToY(-panelHeight);
 
-        FadeTransition fadeOutTransition = new FadeTransition(duration, addlayout);
-        fadeOutTransition.setToValue(0.0);
+            TranslateTransition slideUpTransition2 = new TranslateTransition(slideduration, Admin.scrollPane);
+            slideUpTransition2.setToY(-panelHeight);
 
-        fadeOutTransition.setOnFinished(e -> addlayout.setVisible(false));
+            FadeTransition fadeOutTransition = new FadeTransition(fadeduration, addlayout);
+            fadeOutTransition.setToValue(0.0);
 
-        ParallelTransition parallelTransition = new ParallelTransition(slideUpTransition, slideUpTransition2, fadeOutTransition);
-        parallelTransition.play();
-        slidingLayoutShown = false;
+            fadeOutTransition.setOnFinished(e -> addlayout.setVisible(false));
 
+            ParallelTransition parallelTransition = new ParallelTransition(slideUpTransition, slideUpTransition2, fadeOutTransition);
+            parallelTransition.setOnFinished(event -> Admin.scrollPane.setTranslateY(-panelHeight));
+            parallelTransition.play();
+            slidingLayoutShown = false;
+        }
     }
-}
+
 
     @Override
     public void add()
@@ -367,141 +369,100 @@ public static void slideUp() {
            
         VehicleList.remove(this.License_plate);
         System.out.println("Vehicle removed successfully.");
-        try {
-            Vehicle.displayVehicles();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Vehicle.class.getName()).log(Level.SEVERE, null, ex);
-        }
         updateFile();
     }
     
     @Override
     public void edit()
     {
-        String again = "yes";
-        String whichVehicle;
-        if(VehicleList.isEmpty())
-        {
-            System.out.println("No vehicles exist. Would you like to start adding vehicles?");
-            String addresponse = scanner.next();
-            while(!addresponse.equalsIgnoreCase("yes") && !addresponse.equalsIgnoreCase("no"))
-            {
-                System.out.println("Invalid input. Please enter 'yes' if you would like to start adding vehicles or 'no' if you would like to stop: ");
-                addresponse = scanner.next();
-            }            
-        
-            if(addresponse.equalsIgnoreCase("yes"))
-            {
-                this.add();
-                again = "no";
-            }
-        }
-        
-        while(again.equalsIgnoreCase("yes") && !VehicleList.isEmpty())
-           {
-                System.out.println("Enter the license plate of the vehicle you want to edit: ");
-                whichVehicle = scanner.next();
-                if(VehicleList.containsKey(whichVehicle))
-                {
-                    Vehicle editedVehicle = VehicleList.get(whichVehicle);
-                    System.out.println("Which field would you like to edit: ");
-                    System.out.println("1. License Plate ");
-                    System.out.println("2. Vehicle Category");
-                    System.out.println("3. Number of Seats");
-                    System.out.println("4. Ticket Prices");
-                    System.out.println("5. Bus Driver");
-                        
-                    switch(scanner.nextInt())
-                        {
-                            case 1: 
-                            {
-                                System.out.print("Enter your vehicle's new liscense plate: ");
-                                editedVehicle.setLicense_plate(scanner.next());
-                                System.out.println("Vehicle information edited successfully");                               
-                                break;
-                            } 
-                            case 2:  //NEED WAY TO LIMIT CATEGORIES TO THREE: MEGABUS, BUS, MINIBUS (MAYBE ENUM LIKE ROAA)
-                            {
-                                System.out.print("Enter your vehicle's new category: ");
-                                while(true)
-                                {
-                                    try
-                                    {
-                                        editedVehicle.setCategory(vehicleCategory.valueOf(scanner.next().toUpperCase()));
-                                        System.out.println("Vehicle information edited successfully");                               
-                                        break;
-                                    }
-                                    catch(IllegalArgumentException e)
-                                    {
-                                        System.out.println("Invalid Category. Please choose from the following categories (MEGABUS, BUS, MINIBUS, MICROBUS): ");
-                                    }
-                                }
-                                break;
-                            }
-                            
-                            case 3: 
-                            {
-                                System.out.println("Enter your vehicle's number of seats: ");
-                                while(true)
-                                {
-                                    try
-                                    {
-                                        editedVehicle.setNumber_of_seats(scanner.nextInt());
-                                        System.out.println("Vehicle information edited successfully");                                       
-                                        break;
-                                    }
-                                    catch(InputMismatchException e)
-                                    {
-                                        System.out.print("Invalid input. Please enter an integer value: ");
-                                        scanner.next();
-                                    }         
-                                }
-                                break;
-                            }
-                                                    
-                            case 4: 
-                            {
-                                System.out.println("Enter your vehicle's new ticket price: ");
-                                while(true)
-                                {
-                                    try
-                                    {
-                                        editedVehicle.setTicket_price(scanner.nextInt());
-                                        System.out.println("Vehicle information edited successfully");                                       
-                                        break;
-                                    }
-                                    catch(InputMismatchException e)
-                                    {
-                                        System.out.print("Invalid input. Please enter a numerical value: ");
-                                        scanner.next();
-                                    }         
-                                }                                
-                                break;
-                            }
-                            
-                            case 5:        //IF CONDITION CHECKS IF DRIVER IS AN EMPLOYEE WITHIN THE COMPANY
-                            {
-                                System.out.println("Enter your vehicle's new bus driver: ");
-                                editedVehicle.setBusDriver_name(scanner.nextLine());
-                                System.out.println("Vehicle information edited successfully");  
-                                break;
-                            }
-                        }
-                }
-                else
-                {
-                    System.out.println("License plate not found. Please enter a valid License plate.");
-                    continue;
-                }
+        Vehicle editedVehicle = VehicleList.get(this.License_plate);
+        Stage dialogStage = new Stage();
+        dialogStage.initModality(Modality.WINDOW_MODAL);
+        dialogStage.initStyle(StageStyle.UTILITY);
+
+        Label LicensePlate = new Label("License Plate:");
+        LicensePlate.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        TextField LicensePlateString = new TextField(this.License_plate);
+        LicensePlateString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-font-family: 'Helvetica World';");
+            
+        Label Category = new Label("Category:");
+        Category.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        ObservableList oo = FXCollections.observableArrayList("MicroBus", "MiniBus", "Bus", "MegaBus");
+        ComboBox CategoryString = new ComboBox(oo);       
+        CategoryString.setValue(this.Category);
+            
+        Label NumberofSeats = new Label("Number of Seats:");
+        NumberofSeats.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        Spinner<Integer> seatsspinner = new Spinner<>();
+        SpinnerValueFactory<Integer> seatsvalueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 100, this.Number_of_seats);
+        seatsspinner.setValueFactory(seatsvalueFactory);
+            
+        Label TicketPrice = new Label("Ticket Price:");
+        TicketPrice.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        Spinner<Double> pricespinner = new Spinner<>();
+        SpinnerValueFactory<Double> pricevalueFactory = new SpinnerValueFactory.DoubleSpinnerValueFactory(5, 100, this.ticket_price);
+        pricespinner.setValueFactory(pricevalueFactory);        
+            
+        Label DriverName = new Label("Driver's Name:");
+        DriverName.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        TextField DriverNameString = new TextField(this.BusDriver_name);
+        DriverNameString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-font-family: 'Helvetica World';");
+            
+        Button applyButton = new Button("APPLY");
+        applyButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
+        applyButton.setPrefWidth(100);
                 
-                System.out.println("Would you like to continue editing your vehicle's information? ");
-                again = scanner.next();
-                while(!again.equalsIgnoreCase("yes") && !again.equalsIgnoreCase("no"))
-                {
-                    System.out.println("Invalid input. Please enter 'yes' if you would like to continue editing vehicles or 'no' if you would like to stop: ");
-                    again = scanner.next();
-                }            
-           }
+        Button cancelButton = new Button("CANCEL");
+        cancelButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
+        cancelButton.setPrefWidth(100);
+        
+        GridPane editpane = new GridPane();
+        editpane.add(LicensePlate, 0, 0);
+        editpane.add(LicensePlateString, 1, 0);
+        editpane.add(Category, 0, 1);
+        editpane.add(CategoryString, 1, 1);
+        editpane.add(NumberofSeats, 0, 2);
+        editpane.add(seatsspinner, 1, 2);
+        editpane.add(TicketPrice, 0, 3);
+        editpane.add(pricespinner, 1, 3);
+        editpane.add(DriverName, 0, 4);
+        editpane.add(DriverNameString, 1, 4);
+        editpane.add(applyButton, 0, 5);
+        editpane.add(cancelButton, 1, 5);
+        
+        editpane.setHgap(30);
+        editpane.setVgap(10);
+        editpane.setAlignment(Pos.CENTER);
+        
+        editpane.setStyle("-fx-background-color: #090D26; -fx-padding: 10px;");
+        
+        Scene editScene = new Scene(editpane, 300, 300);
+        dialogStage.setScene(editScene);
+        dialogStage.setTitle("Edit Vehicle");
+        dialogStage.show();
+
+        
+        applyButton.setOnAction(ev -> 
+        {
+            editedVehicle.setLicense_plate(LicensePlateString.getText());
+            editedVehicle.setCategory(Vehicle.vehicleCategory.valueOf(CategoryString.getValue().toString().toUpperCase()));
+            editedVehicle.setNumber_of_seats(seatsspinner.getValue());
+            editedVehicle.setTicket_price(pricespinner.getValue());
+            editedVehicle.setBusDriver_name(DriverNameString.getText());
+            try {
+                displayVehicles();
+            } catch (FileNotFoundException ex) {
+                System.out.println(ex);;
+            }
+            dialogStage.close();
+        });
+        
+
+        
+        cancelButton.setOnAction(event -> 
+        {
+            dialogStage.close();
+        });
     }
     
     @Override
@@ -714,68 +675,24 @@ public static void displayVehicles() throws FileNotFoundException {
         Button editButton = new Button();
         editButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
         editButton.setGraphic(editimageView);
-//        editButton.setOnAction(e -> {
-//        Stage dialogStage = new Stage();
-//        dialogStage.initModality(Modality.WINDOW_MODAL);
-//        dialogStage.initStyle(StageStyle.UTILITY);
-//
-//        Label LicensePlate = new Label("License Plate:");
-//        LicensePlate.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
-//        TextField LicensePlateString = new TextField();
-//        LicensePlateString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-font-family: 'Helvetica World';");
-//            
-//        Label Category = new Label("Category:");
-//        Category.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
-//        ObservableList oo = FXCollections.observableArrayList("MicroBus", "MiniBus", "Bus", "MegaBus");
-//        ComboBox CategoryString = new ComboBox(oo);       
-//        CategoryString.setValue("Bus");
-//            
-//        Label NumberofSeats = new Label("Number of Seats:");
-//        NumberofSeats.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
-//        Spinner<Integer> seatsspinner = new Spinner<>();
-//        SpinnerValueFactory<Integer> seatsvalueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 100, 40);
-//        seatsspinner.setValueFactory(seatsvalueFactory);
-//            
-//        Label TicketPrice = new Label("Ticket Price:");
-//        TicketPrice.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
-//        Spinner<Integer> pricespinner = new Spinner<>();
-//        SpinnerValueFactory<Integer> pricevalueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(5, 100, 20);
-//        pricespinner.setValueFactory(pricevalueFactory);        
-//            
-//        Label DriverName = new Label("Driver's Name:");
-//        DriverName.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
-//        TextField DriverNameString = new TextField();
-//        DriverNameString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-font-family: 'Helvetica World';");
-//            
-//        Button applyButton = new Button("APPLY");
-//        applyButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
-//        applyButton.setPrefWidth(100);
-//        
-//        applyButton.setOnAction(ev -> 
-//        {
-//            
-//        });
-//        
-//        Button cancelButton = new Button("CANCEL");
-//        cancelButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
-//        cancelButton.setPrefWidth(100);
-//        Button clearButton = new Button("CLEAR");
-//        clearButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
-//        clearButton.setPrefWidth(100);    
-//        }
-                
-
-
-
+        
         Button deleteButton = new Button();
         deleteButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
         deleteButton.setGraphic(deleteimageView);
-        deleteButton.setOnAction(e -> {
-            Vehicle vehicle = VehicleList.get(licensePlate.getText());
-            vehicle.remove();
-        });
+        
         HBox tempHBox = new HBox(80,licensePlate, category, numberofSeats, ticketPrice, driverName, new HBox(10,editButton, deleteButton));
         Admin.vehicleTable.getChildren().add(tempHBox);
+
+        
+        editButton.setOnAction(e -> {
+            v.edit();
+        });
+                
+        
+        deleteButton.setOnAction(e -> {
+            Admin.vehicleTable.getChildren().remove(tempHBox);
+            v.remove();
+        });
     }
 }
 
