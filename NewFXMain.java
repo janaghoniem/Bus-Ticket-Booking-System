@@ -52,10 +52,7 @@ public class NewFXMain extends Application {
         
         //MANAGE USERS BUTTON PAGE MARIAM
         
-        //MANAGE VEHICLES BUTTON PAGE JANA
-        
-        Scene vehicleScene = Admin.managesVehicle();
-
+        //MANAGE VEHICLES BUTTON PAGE JANa
         //MANAGE TRIPS BUTTON PAGE ROAA
         
         //MANAGE BOOKINGS BUTTON PAGE NOURAN
@@ -68,9 +65,29 @@ public class NewFXMain extends Application {
 
         //FOR TESTING - CHANGE THE PARAMETERS IF YOU NEED TO TEST YOUR OWN SCENE
         
-        primaryStage.setTitle("Bus-Ticket Booking System");
-        primaryStage.setScene(vehicleScene);
-        primaryStage.show();
+        Admin admin = new Admin();
+    admin.readUsersFromFile();
+
+    BorderPane border = new BorderPane();
+    Label menuLabel = new Label("\u2630"); // Unicode character for hamburger icon
+    menuLabel.setStyle("-fx-font-size: 24; -fx-cursor: hand; -fx-background-color: #358dca"); // Set the background color
+    menuLabel.setOnMouseClicked(event -> admin.toggleMenu(border));
+    HBox menuBox = new HBox(menuLabel);
+    menuBox.setAlignment(Pos.TOP_LEFT);
+    border.setTop(menuBox);
+
+    Label welcomeLabel = new Label("Welcome, Admin!");
+    welcomeLabel.setStyle("-fx-font-size: 24;");
+    admin.getStackPane().getChildren().add(welcomeLabel);
+    border.setCenter(admin.getStackPane());
+
+    Scene scene = new Scene(border, 600, 400);
+    scene.setFill(Color.rgb(135, 206, 250)); // Set the background color of the stage
+    border.setStyle("-fx-background-color: #358dca;"); // Set the background color of the BorderPane
+
+    primaryStage.setTitle("Admin Dashboard");
+    primaryStage.setScene(scene);
+    primaryStage.show();
         
     }
 
