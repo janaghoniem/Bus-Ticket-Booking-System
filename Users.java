@@ -230,5 +230,45 @@ public  class Users {
      private void exit() {
          System.out.println("Thank you for using our bus ticket booking system.");
      }
+
+    //zyada 3ashan el admin
+ public void setSalary(double salary) {
+        this.Salary = salary;
+    }
+
+    // New method to get salary for users
+    public double getSalary() {
+        return Salary;
+    }
+
+    // New method to set bonus for users
+    public void setBonus(int bonus) {
+        this.Bonus = bonus;
+    }
+
+    // New method to get bonus for users
+    public int getBonus() {
+        return Bonus;
+    }
+
+ public static void addSalaryToFile(int userId, double salary) {
+        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("user_information.dat", true))) {
+            dos.writeInt(userId);
+            dos.writeDouble(salary);
+            System.out.println("Salary added successfully!");
+        } catch (IOException e) {
+            System.out.println("Error adding salary to file: " + e.getMessage());
+        }
+    }
+ public static void addBonusToFile(int userId, int bonus) {
+        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("user_information.dat", true))) {
+            dos.writeInt(userId);
+            dos.writeInt(bonus);
+            System.out.println("Bonus added successfully!");
+        } catch (IOException e) {
+            System.out.println("Error adding bonus to file: " + e.getMessage());
+        }
+    }
+
  
 }
