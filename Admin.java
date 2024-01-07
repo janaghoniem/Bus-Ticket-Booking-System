@@ -1,8 +1,9 @@
 
 package project.trial;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,50 +12,62 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Random;
-import javafx.animation.TranslateTransition;
+import java.io.*;
+import java.util.*;
+import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.util.Duration;
+import javafx.stage.Stage;
 
 
 /**
  *
  * @author jana
  */
-public class Admin extends Users{
-
-    //VBox TRIAL
-    public static VBox vehicleTable = new VBox();
+public class Admin extends Users implements manages<Admin>{
+     public static VBox vehicleTable = new VBox();
     static ScrollPane scrollPane = new ScrollPane(vehicleTable);
-    
     
     public static final List<Users> users = new ArrayList<>();
     public static final List<Admin> admins = new ArrayList<>();
     private static final Scanner scanner = new Scanner(System.in);
     private static final int GUEST_PASSWORD_LENGTH = 5;
 //  private static final String GUEST_PASSWORD_PREFIX = "22";
+    private final StackPane stackPane = new StackPane();
+    private static final String BACKGROUND_IMAGE_PATH = "file:///C:/Users/Electronica Care/Pictures/504795_pia00135_orig_718331.jpg";
 
     protected double Salary;
     protected int Bonus;
@@ -67,20 +80,27 @@ public class Admin extends Users{
         admins.add(this);
         Salary = 0.0; 
         Bonus = 0;
+        //readUsersFromFile();
+        //readAdminsFromFile();
     }
     
+    @Override
     public double getSalary() {
         return Salary;
     }
 
+    @Override
     public void setSalary(double Salary) {
         this.Salary = Salary;
+       
     }
 
+    @Override
     public int getBonus() {
         return Bonus;
     }
 
+    @Override
     public void setBonus(int Bonus) {
         this.Bonus = Bonus;
     }
@@ -92,50 +112,366 @@ public class Admin extends Users{
     public static List<Users> getUsers() {
         return users;
     }
-    
-    public void addUser() {
+public void toggleMenu(BorderPane border) {
+    VBox menuVBox = (VBox) border.getLeft();
+
+    if (menuVBox == null) {
+        menuVBox = createMenuVBox();
+        border.setLeft(menuVBox);
+    } else {
+        border.setLeft(null);
+    }
+}
+public StackPane getStackPane() {
+    return stackPane;
+}
+
+private VBox createMenuVBox() {
+    VBox menuVBox = new VBox(10);
+
+    Button manageUsersBtn = new Button("Manage Users");
+    manageUsersBtn.setOnAction(event -> ManageUsers());
+
+    Button manageTripsBtn = new Button("Manage Trips");
+    manageTripsBtn.setOnAction(event -> handleManageTrips());
+
+    Button manageVehiclesBtn = new Button("Manage Vehicles");
+    manageVehiclesBtn.setOnAction(event -> {
+    Scene vehicleScene = managesVehicle();
+    Stage primaryStage = (Stage) manageVehiclesBtn.getScene().getWindow(); // Get the current stage
+    primaryStage.setScene(vehicleScene);
+});
+
+    menuVBox.getChildren().addAll(manageUsersBtn, manageTripsBtn, manageVehiclesBtn);
+
+    return menuVBox;
+}
+  private void setSceneBackground(VBox container) {
+        String imagePath = "C:\\Users\\Electronica Care\\Pictures\\Screenshots\\Screenshot 2024-01-07 055407.png";
+
+        Image backgroundImage = new Image("file:" + imagePath);
+
+        BackgroundImage background = new BackgroundImage(
+                backgroundImage,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.DEFAULT,
+                BackgroundSize.DEFAULT
+        );
+
+        Background backgroundWithImage = new Background(background);
+
+        container.setBackground(backgroundWithImage);
+    }
+
+private void ManageUsers() {
+    VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+    stackPane.getChildren().clear();
+    stackPane.getChildren().add(manageUsersMenu);
+    setSceneBackground(manageUsersMenu);
+}
+
+private Label createStyledLabel(String text) {
+    Label styledLabel = new Label(text);
+    styledLabel.setStyle("-fx-font-size: 40; -fx-font-weight: bold; -fx-text-fill: white;");
+    return styledLabel;
+}
+
+private VBox createManageUsersPane(Label welcomeLabel) {
+    VBox manageUsersMenu = new VBox(10);
+    manageUsersMenu.setAlignment(Pos.CENTER);
+
+    TextField searchField = new TextField();
+    searchField.setPromptText("Search Users");
+    searchField.setStyle("-fx-font-size: 15;");
+    searchField.setMaxWidth(300);
+
+    ListView<String> listView = new ListView<>();
+    listView.setMaxHeight(100);
+    listView.setPrefWidth(10);
+    listView.setVisible(false); // Initially set to invisible
+
+    searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+        boolean searchTermEntered = !newValue.trim().isEmpty();
+        listView.setVisible(searchTermEntered);
+        handleSearchUsers(searchField, listView);
+    });
+
+    GridPane gridPane = new GridPane();
+    gridPane.setAlignment(Pos.CENTER);
+    gridPane.setHgap(25);
+    gridPane.setVgap(25);
+    gridPane.add(createStyledButton("Add User", event -> add()), 0, 1);
+    gridPane.add(createStyledButton("Remove User", event -> remove()), 1, 1);
+    gridPane.add(searchField, 0, 0, 2, 1); // Span 2 columns for the search bar
+    gridPane.add(createStyledButton("Add Salary To User", event -> handleAddSalary()), 0, 2);
+    gridPane.add(createStyledButton("Add Bonus to User", event -> handleAddBonus()), 1, 2);
+    gridPane.add(createStyledButton("Display User Reports", event -> handleDisplayUsers()), 0, 3);
+    gridPane.add(createStyledButton("Display Booking Reports", event -> handleDisplayBookings()), 1, 3);
+    gridPane.add(createStyledButton("Edit User", event -> edit()), 0, 4);
+
+    manageUsersMenu.getChildren().addAll(
+            welcomeLabel,
+            gridPane,
+            listView
+    );
+
+    return manageUsersMenu;
+}
+
+
+public Button createStyledButton(String text, EventHandler<ActionEvent> action) {
+    Button button = new Button(text);
+    button.setStyle("-fx-font-size: 18; -fx-background-color: #ca7235; -fx-text-fill: white;");
+    button.setMinWidth(150);
+    button.setOnAction(action);
+    return button;
+}
+
+
+private void handleAddSalary() {
+    VBox addSalaryMenu = new VBox(10);
+    addSalaryMenu.setAlignment(Pos.CENTER);
+    Label welcomeLabel = new Label("Add Salary");
+    welcomeLabel.setStyle("-fx-font-size: 24;");
+
+    TextField userIdField = new TextField();
+    userIdField.setPromptText("User ID");
+
+    TextField salaryField = new TextField();
+    salaryField.setPromptText("Salary");
+
+    Button addSalaryBtn = createStyledButton("Add Salary", event -> handleAddSalaryAction(userIdField, salaryField, addSalaryMenu, welcomeLabel));
+
+    addSalaryMenu.getChildren().addAll(
+            welcomeLabel,
+            userIdField,
+            salaryField,
+            addSalaryBtn
+    );
+
+    updateStack(addSalaryMenu);
+}
+
+private void handleAddSalaryAction(TextField userId, TextField salary, VBox parentBox, Label welcomeLabel) {
     try {
-        System.out.println("Enter user ID:");
-        int id = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character left by nextInt()
+        int id = Integer.parseInt(userId.getText());
+        double salaryValue = Double.parseDouble(salary.getText());
 
-        System.out.println("Enter user name:");
-        String userName = scanner.nextLine();
-
-        System.out.println("Enter user password:");
-        String password = scanner.nextLine();
-
-        // Check if the user with the given ID already exists
-        boolean existingUser = false;
-        for (Users u : users) {
-            if (u.getID() == id) {
-                existingUser = true;
-                break;
-            }
-        }
-
-        if (existingUser) {
-            throw new RuntimeException("User already exists");
+        if (!userExists(id, "")) {
+            showAlert("Error", "User does not exist.", Alert.AlertType.ERROR);
         } else {
-            Users newUser = new Users(id, password, userName);
-            users.add(newUser);
+            addSalary(id, salaryValue);
 
-            // Check if the added user is a regular user and not a guest
-            if (!"guest".equals(newUser.getName())) {
-                Receptionist.storeReceptionistInfo(new Receptionist(newUser.getID(), newUser.getPassword(), newUser.getName()));
-            }
-
-            System.out.println("User added successfully!");
+            showAlert("Success", "Salary added successfully.", Alert.AlertType.INFORMATION);
+            parentBox.getChildren().clear();
+            parentBox.getChildren().add(welcomeLabel);
         }
-    } catch (RuntimeException e) {
-        System.out.println("Error adding user: " + e.getMessage());
+    } catch (NumberFormatException e) {
+        showAlert("Error", "Invalid input format. Please enter valid values.", Alert.AlertType.ERROR);
     }
 }
 
-// Generate random password for guests with specific prefix
+ private void showAlert(String title, String content, Alert.AlertType alertType) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+private void handleAddBonus() {
+    TextInputDialog dialog = new TextInputDialog();
+    dialog.setTitle("Add Bonus");
+    dialog.setHeaderText("Enter User ID");
+    dialog.setContentText("User ID:");
+    Optional<String> result = dialog.showAndWait();
+    if (result.isPresent()) {
+        try {
+            int userId = Integer.parseInt(result.get());
+            if (userExists(userId, "")) {
+                TextInputDialog bonusDialog = new TextInputDialog();
+                bonusDialog.setTitle("Add Bonus");
+                bonusDialog.setHeaderText("Enter Bonus");
+                bonusDialog.setContentText("Bonus:");
+
+                Optional<String> bonusResult = bonusDialog.showAndWait();
+                if (bonusResult.isPresent()) {
+                    try {
+                        int bonus = Integer.parseInt(bonusResult.get());
+
+                        addBonus(userId, bonus);
+
+                        showAlert("Success", "Bonus added successfully.", Alert.AlertType.INFORMATION);
+                    } catch (NumberFormatException e) {
+                        showAlert("Error", "Invalid bonus format. Please enter a valid integer.", Alert.AlertType.ERROR);
+                    }
+                }
+            } else {
+                showAlert("Error", "User does not exist.", Alert.AlertType.ERROR);
+            }
+        } catch (NumberFormatException e) {
+            showAlert("Error", "Invalid User ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+        }
+    }
+}
+
+
+private void handleDisplayUsers() {
+    StringBuilder report = new StringBuilder();
+    report.append("Receptionist with the maximum no. of Bookings: ")
+            .append(Booking.findReceptionistWithMostBookings())
+            .append("\n");
+
+    report.append("Guest with the maximum no. of Bookings: ")
+            .append(Booking.findGuestWithMostBookings())
+            .append("\n");
+
+    report.append("Receptionist with the maximum revenue: ")
+            .append(Booking.findReceptionistWithMostRevenue())
+            .append("\n");
+
+    report.append("Guest with the maximum revenue: ")
+            .append(Booking.findGuestWithMostRevenue())
+            .append("\n");
+
+    showAlert("User Reports", report.toString(), Alert.AlertType.INFORMATION);
+}
+
+
+
+
+private void handleEditUserAction(TextField userId, TextField userName, VBox parentBox, Label welcomeLabel) {
+    try {
+        int id = Integer.parseInt(userId.getText());
+        String name = userName.getText();
+
+        if (!userExists(id, name)) {
+            showAlert("Error", "User does not exist.", Alert.AlertType.ERROR);
+        } else {
+            TextField newUserId = new TextField();
+            newUserId.setPromptText("New User ID");
+
+            TextField newUserName = new TextField();
+            newUserName.setPromptText("New User Name");
+
+            Button saveChangesBtn = createStyledButton("Save Changes", event -> handleSaveChanges(id, name, newUserId.getText(), newUserName.getText(), parentBox, welcomeLabel));
+
+            parentBox.getChildren().clear(); 
+            parentBox.getChildren().addAll(newUserId, newUserName, saveChangesBtn);
+        }
+    } catch (NumberFormatException e) {
+        showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+    }
+}
+
+private void handleSaveChanges(int oldUserId, String oldUserName, String newUserIdText, String newUserName, VBox parentBox, Label welcomeLabel) {
+    try {
+        int newUserId = Integer.parseInt(newUserIdText);
+        if (userExists(newUserId, newUserName)) {
+            showAlert("Error", "User with the new ID and name already exists.", Alert.AlertType.ERROR);
+        } else {
+
+            editUser(oldUserId, oldUserName, newUserId, newUserName);
+
+            showAlert("Success", "User updated successfully.", Alert.AlertType.INFORMATION);
+            parentBox.getChildren().clear();
+            parentBox.getChildren().add(welcomeLabel);
+        }
+    } catch (NumberFormatException e) {
+        showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+    }
+}
+
+ private void updateStack(Pane pane) {
+    System.out.println("update stack sha8al"); 
+    stackPane.getChildren().clear();
+    stackPane.getChildren().add(pane);
+}
+
+
+private void handleDisplayBookings() {
+    showAlert("Display Receptionists", "Displaying receptionists functionality is not implemented yet.", Alert.AlertType.INFORMATION);
+}
+
+private void handleManageTrips() {
+    System.out.println("button el trips sha8al");
+}
+
+    public static void readUsersFromFile() {
+    try (DataInputStream dis = new DataInputStream(new FileInputStream("user_information.dat"))) {
+        int numUsers = dis.readInt();
+        for (int i = 0; i < numUsers; i++) {
+            int id = dis.readInt();
+            String name = dis.readUTF();
+            String password = dis.readUTF(); // Read password
+
+            Users user = new Users(id, password, name);
+            users.add(user);
+        }
+        System.out.println("User information loaded from file.");
+    } catch (FileNotFoundException e) {
+
+
+    } catch (IOException e) {
+        System.out.println("Error reading user information from file: " + e.getMessage());
+    }
+}
+
+public static void saveUsersToFile() {
+    try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("user_information.dat"))) {
+        dos.writeInt(users.size());
+        for (Users user : users) {
+            dos.writeInt(user.getID());
+            dos.writeUTF(user.getName());
+            dos.writeUTF(user.getPassword()); // Save password
+        }
+        System.out.println("User information saved to file.");
+        saveAdminsToFile(); 
+    } catch (IOException e) {
+        System.out.println("Error saving user information to file: " + e.getMessage());
+    }
+}
+
+  
+public boolean userExists(int id, String name) {
+    for (Users u : users) {
+        if (u.getID() == id && u.getName().equals(name)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+public void editUser(int currentId, String currentName, int newId, String newName) {
+    try {
+        readUsersFromFile();
+
+        Optional<Users> userToEdit = users.stream()
+                .filter(u -> u.getID() == currentId && u.getName().equals(currentName))
+                .findFirst();
+
+        if (userToEdit.isPresent()) {
+            if (!userExists(newId, newName)) {
+                Users editedUser = userToEdit.get();
+                editedUser.setID(newId);
+                editedUser.setName(newName);
+
+                System.out.println("User edited successfully!");
+            } else {
+                throw new RuntimeException("New ID or name already exists. Please choose unique values.");
+            }
+        } else {
+            throw new RuntimeException("User not found.");
+        }
+    } catch (RuntimeException e) {
+        System.out.println("Error editing user: " + e.getMessage());
+    }
+}
+
+
    public static int generateGuestId() {
     Random random = new Random();
-    
     // Generate a 5-digit ID with the first two digits being 22
     int guestId = Integer.parseInt("22" + String.format("%03d", random.nextInt(1000)));
     
@@ -145,8 +481,6 @@ public class Admin extends Users{
 public static String generateGuestPassword() {
     Random random = new Random();
     StringBuilder passwordBuilder = new StringBuilder();
-
-    // Generate a 5-digit password with random integers
     for (int i = 0; i < GUEST_PASSWORD_LENGTH; i++) {
         passwordBuilder.append(random.nextInt(10));
     }
@@ -154,134 +488,39 @@ public static String generateGuestPassword() {
     return passwordBuilder.toString();
 }
 
-  public void removeUser() {
-    try {
-        System.out.println("Enter user ID or name to remove:");
-        String inputToRemove = scanner.nextLine();
-
-        Iterator<Users> iterator = users.iterator();
-        boolean found = false;
-
-        while (iterator.hasNext()) {
-            Users currentUser = iterator.next();
-            if (String.valueOf(currentUser.getID()).equals(inputToRemove) || currentUser.getName().equals(inputToRemove)) {
-                iterator.remove();
-                System.out.println("User removed successfully!");
-                found = true;
-                break;
-            }
+  
+public boolean findUser(int id, String name) {
+    for (Users currentUser : users) {
+        if (currentUser.getID() == id || currentUser.getName().equals(name)) {
+            return true; 
         }
-
-        if (!found) {
-            System.out.println("User not found.");
-            System.out.println("Do you want to return (return) or continue (continue)?");
-            String choice = scanner.nextLine().trim().toUpperCase();
-
-            switch (choice) {
-                case "return": {
-                    return; // Exit the method
-                }
-                case "continue": {
-                }
-                default: throw new RuntimeException("Invalid choice");
-            }
-            // Continue with the rest of the method
-        }
-    } catch (RuntimeException e) {
-        System.out.println("Error removing user: " + e.getMessage());
     }
+    return false; 
 }
 
+public List<Users> searchUsers(String searchTerm) {
+    List<Users> matchingUsers = new ArrayList<>();
 
-    public void searchUsers() {
-    try {
-        System.out.println("Enter search term (ID or Name):");
-        String searchTerm = scanner.nextLine();
-
-        Optional<Users> foundUser = users.stream()
-                .filter(u -> String.valueOf(u.getID()).equals(searchTerm) || u.getName().equals(searchTerm))
-                .findFirst();
-
-        if (foundUser.isPresent()) {
-            Users userFound = foundUser.get();
-            System.out.println("User found! Details:");
-            System.out.println("ID: " + userFound.getID());
-            System.out.println("Name: " + userFound.getName());
-           // System.out.println("Password: " + userFound.getPassword());
-        } else {
-            throw new RuntimeException("User not found");
+    for (Users user : users) {
+        if (String.valueOf(user.getID()).contains(searchTerm) || user.getName().toLowerCase().contains(searchTerm)) {
+            matchingUsers.add(user);
         }
-    } catch (RuntimeException e) {
-        System.out.println("Error searching for user: " + e.getMessage());
     }
+
+    return matchingUsers;
 }
-
-    public void addSalary() {
-        try {
-            System.out.println("Enter user ID to add salary:");
-            int idToAddSalary = scanner.nextInt();
-            scanner.nextLine();
-
-            Optional<Users> userWithSalary = users.stream()
-                    .filter(u -> u.getID() == idToAddSalary)
-                    .findFirst();
-
-            if (userWithSalary.isPresent()) {
-                // Check if the user is an admin
-                if ("admin".equals(userWithSalary.get().getName())) {
-                    // Assume salary is a double value
-                    System.out.println("Enter salary:");
-                    double salary = scanner.nextDouble();
-                    scanner.nextLine(); // Consume the newline character left by nextDouble()
-
-                    // Set or update the salary for the admin
-                    setSalary(salary);
-
-                    System.out.println("Salary added successfully!");
-                } else {
-                    throw new RuntimeException("Only admin users can have a salary.");
-                }
-            } else {
-                throw new RuntimeException("User not found");
-            }
-        } catch (RuntimeException e) {
-            System.out.println("Error adding salary: " + e.getMessage());
-        }
+public void addSalary(int userId, double salary) {
+                readUsersFromFile();
+        super.setSalary(salary);
+        Users.addSalaryToFile(userId, salary); 
     }
-
- public void addBonus() {
-        try {
-            System.out.println("Enter user ID to add bonus:");
-            int idToAddBonus = scanner.nextInt();
-            scanner.nextLine(); // Consume the newline character left by nextInt()
-
-            Optional<Users> userWithBonus = users.stream()
-                    .filter(u -> u.getID() == idToAddBonus)
-                    .findFirst();
-
-            if (userWithBonus.isPresent()) {
-                // Check if the user is an admin
-                if ("admin".equals(userWithBonus.get().getName())) {
-                    // Assume bonus is an integer value
-                    System.out.println("Enter bonus:");
-                    int bonuss = scanner.nextInt();
-                    scanner.nextLine(); // Consume the newline character left by nextInt()
-
-                    // Set or update the bonus for the admin
-                    setBonus(bonuss);
-
-                    System.out.println("Bonus added successfully!");
-                } else {
-                    throw new RuntimeException("Only admin users can have a bonus.");
-                }
-            } else {
-                throw new RuntimeException("User not found");
-            }
-        } catch (RuntimeException e) {
-            System.out.println("Error adding bonus: " + e.getMessage());
-        }
+    
+    public void addBonus(int userId, int bonus) {
+                    readUsersFromFile();
+        super.setBonus(bonus);
+        Users.addBonusToFile(userId, bonus); 
     }
-
+ 
 public void displayUserReports(Users currentUser) {
         System.out.println("User Details:");
         System.out.println("ID: " + currentUser.getID());
@@ -303,127 +542,39 @@ public static void displayAdmins() {
             }
         }
     }
-public static void manageUsers() {
-    boolean exitProgram = false;
-    Scanner s = new Scanner(System.in);
 
-    Admin a = new Admin();
 
-    while (!exitProgram) {
-        System.out.println("Choose an option:");
-            System.out.println("1. Add Admin");
-            System.out.println("2. Add Receptionist");
-            System.out.println("3. Remove User");
-            System.out.println("4. Search Users");
-            System.out.println("5. Add salary for an employee");
-            System.out.println("6. Add bonus to an employee");
-            System.out.println("7. Display User Reports");
-            System.out.println("8. Display Admins"); // New option to display admins
-            System.out.println("9. Exit");
-            System.out.println("10. Return to Main Menu");
+public static void readAdminsFromFile() {
+    try (DataInputStream dis = new DataInputStream(new FileInputStream("admin_information.dat"))) {
+        int numAdmins = dis.readInt();
+        for (int i = 0; i < numAdmins; i++) {
+            int id = dis.readInt();
+            String name = dis.readUTF();
+            String password = dis.readUTF(); // Read password
 
-            int choice = s.nextInt();
-            s.nextLine();
-
-            switch (choice) {
-                case 1: {
-                    System.out.println("Enter admin ID:");
-                    int adminId = s.nextInt();
-                    s.nextLine();
-
-                    System.out.println("Enter admin password:");
-                    String adminPassword = s.nextLine();
-                    System.out.println("Enter admin name:");
-                    String adminName = s.nextLine();
-
-                    Admin newAdmin = new Admin(adminId, adminPassword, adminName);
-                    admins.add(newAdmin);
-                    //newAdmin.addUser();
-                    break;
-                }
-                case 2: {
-                    /*System.out.println("Enter receptionist ID:");
-                    int receptionistId = s.nextInt();
-                    s.nextLine();
-
-                    System.out.println("Enter receptionist password:");
-                    String receptionistPassword = s.nextLine();
-                    System.out.println("Enter receptionist password:");
-                    String receptionistName = s.nextLine();
-
-                    // Set name to "receptionist" for receptionist users
-                    a = new admin(receptionistId, receptionistPassword, receptionistName);*/
-                    a.addUser();
-                    break;
-                }
-                case 3:
-                    a.removeUser();
-                    break;
-                case 4:
-                    a.searchUsers();
-                    break;
-                case 5: {
-                    if ("admin".equals(a.getName())) {
-                        System.out.println("Admins cannot have a salary.");
-                    } else {
-                        a.addSalary();
-                    }
-                    break;
-                }
-                case 6:
-                    a.addBonus();
-                    break;
-                case 7: {
-                    // Display user details
-                    System.out.println("Enter user ID:");
-                    int idToDisplay = s.nextInt();
-                    s.nextLine(); // Consume the newline character left by nextInt()
-
-                    Optional<Users> userToDisplay = users.stream()
-                            .filter(u -> u.getID() == idToDisplay)
-                            .findFirst();
-
-                    if (userToDisplay.isPresent()) {
-                        a.displayUserReports(userToDisplay.get());
-                    } else {
-                        System.out.println("User not found.");
-                    }
-                    break;
-                }
-                case 8: {
-                    Admin.displayAdmins(); // Call the new method to display admins
-                    break;
-                }
-                case 9: {
-                    a.saveUsersToFile();
-                    //receptionist.displayReceptionists();
-                    exitProgram = true;
-                    break;
-                }
-                case 10: {
-                    // Return to the main menu
-                    exitProgram = false;
-                    break;
-                }
-                default:
-                    System.out.println("Invalid choice. Please try again.");
-            }}
-}
-private void saveUsersToFile() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("user_information.txt"))) {
-            for (Users currentUser : users) {
-                writer.write("ID: " + currentUser.getID() + ", Name: " + currentUser.getName());
-                if (!"guest".equals(currentUser.getName())) {
-                    writer.write(", Salary: " +getSalary());
-                }
-                writer.newLine();
-            }
-            System.out.println("User information saved to file.");
-        } catch (IOException e) {
-            System.out.println("Error saving user information to file: " + e.getMessage());
+            admins.add(new Admin(id, password, name));
         }
+        System.out.println("Admin information loaded from file.");
+    } catch (FileNotFoundException e) {
+        // Ignore if the file doesn't exist yet
+    } catch (IOException e) {
+        System.out.println("Error reading admin information from file: " + e.getMessage());
     }
+}
 
+public static void saveAdminsToFile() {
+    try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("admin_information.dat"))) {
+        dos.writeInt(admins.size());
+        for (Admin admin : admins) {
+            dos.writeInt(admin.getID());
+            dos.writeUTF(admin.getName());
+            dos.writeUTF(admin.getPassword()); // Save password
+        }
+        System.out.println("Admin information saved to file.");
+    } catch (IOException e) {
+        System.out.println("Error saving admin information to file: " + e.getMessage());
+    }
+}
     public static Scene managesVehicle()
     {
         FlowPane vehicleSceneLayout = new FlowPane();
@@ -434,11 +585,12 @@ private void saveUsersToFile() {
         
         //IMAGES & ICONS
         try {
-            Image icon = new Image(new FileInputStream("/home/jana/Downloads/magnifier(2).png"));
-            //IMAGEVIEW FOR THE ICON
-            ImageView imageView = new ImageView(icon);
-            imageView.setFitHeight(30); 
-            imageView.setPreserveRatio(true);  
+            Image icon = new Image(new FileInputStream("C:/Users/Electronica Care/Pictures/504795_pia00135_orig_718331.jpg"));
+// IMAGEVIEW FOR THE ICON
+ImageView imageView = new ImageView(icon);
+imageView.setFitHeight(30);
+imageView.setPreserveRatio(true);
+
             
             //LABELS
             Label manageVehiclesLabel = new Label();
@@ -524,6 +676,7 @@ private void saveUsersToFile() {
         return vehicleScene;
     }
     
+    
     public static void managesTrips() throws IOException
     {
         Trips t = new Trips();
@@ -562,6 +715,7 @@ private void saveUsersToFile() {
                     break;
                 }
             }
+        
             Trips.writeToFile();
             System.out.println("Would you like to return to manageTrips main menu?");
             con = n.next();
@@ -575,4 +729,173 @@ private void saveUsersToFile() {
             }
         }    
     }
+
+  @Override
+public void add() {
+    Label welcomeLabel = new Label();
+
+    TextField idField = new TextField();
+    idField.setPromptText("User ID");
+    TextField nameField = new TextField();
+    nameField.setPromptText("User Name");
+    PasswordField passwordField = new PasswordField();
+    passwordField.setPromptText("User Password");
+
+    Button addUserBtn = new Button("Add User");
+    addUserBtn.setOnAction((ActionEvent event) -> {
+        String idText = idField.getText();
+        String name = nameField.getText();
+        String password = passwordField.getText();
+
+        if (idText.isEmpty() || name.isEmpty() || password.isEmpty()) {
+            showAlert("Error", "Please fill in all fields.", Alert.AlertType.ERROR);
+        } else {
+            try {
+                int id = Integer.parseInt(idText);
+                if (userExists(id, name)) {
+                    showAlert("Error", "User already exists.", Alert.AlertType.ERROR);
+                } else {
+                    try {
+                        readUsersFromFile();
+
+                        if (userExists(id, name)) {
+                            throw new RuntimeException("User already exists");
+                        } else {
+                            Users newUser = new Users(id, password, name);
+                            users.add(newUser);
+                            saveUsersToFile();
+
+                            System.out.println("User added successfully!");
+                            updateStack(createManageUsersPane(welcomeLabel));
+                        }
+                    } catch (RuntimeException e) {
+                        showAlert("Error", "Error adding user: " + e.getMessage(), Alert.AlertType.ERROR);
+                    }
+                }
+            } catch (NumberFormatException e) {
+                showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+            }
+        }
+    });
+
+    Button goBackBtn = createStyledButton("Go Back", event -> {
+        // Go back to Manage Users page
+        stackPane.getChildren().clear();
+        stackPane.getChildren().add(welcomeLabel);
+        updateStack(createManageUsersPane(welcomeLabel));
+    });
+
+    VBox vbox = new VBox(20);
+    vbox.setAlignment(Pos.CENTER);
+
+    vbox.getChildren().addAll(idField, nameField, passwordField, addUserBtn, goBackBtn);
+
+    stackPane.getChildren().clear();
+    stackPane.getChildren().add(vbox);
+}
+
+    @Override
+public void remove() {
+    Label welcomeLabel = new Label();
+
+    TextField idField = new TextField();
+    idField.setPromptText("User ID");
+    TextField nameField = new TextField();
+    nameField.setPromptText("User Name");
+
+    Button removeUserBtn = new Button("Remove User");
+    removeUserBtn.setOnAction((ActionEvent event) -> {
+        String idText = idField.getText();
+        String name = nameField.getText();
+
+        if (idText.isEmpty() || name.isEmpty()) {
+            showAlert("Error", "Please fill in all fields.", Alert.AlertType.ERROR);
+        } else {
+            try {
+                int id = Integer.parseInt(idText);
+
+                readUsersFromFile(); // Moved this line to ensure data is up-to-date
+
+                boolean found = findUser(id, name);
+
+                if (found) {
+                    // Remove the user
+                    users.removeIf(currentUser -> currentUser.getID() == id && currentUser.getName().equals(name));
+                    System.out.println("User removed successfully!");
+                    updateStack(createManageUsersPane(welcomeLabel));
+                } else {
+                    showAlert("Error", "User doesn't exist", Alert.AlertType.ERROR);
+                }
+            } catch (NumberFormatException e) {
+                showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+            } catch (RuntimeException e) {
+                showAlert("Error", "Error removing user: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        }
+    });
+
+    Button goBackBtn = createStyledButton("Go Back", event -> {
+        // Go back to Manage Users page
+        stackPane.getChildren().clear();
+        stackPane.getChildren().add(welcomeLabel);
+        updateStack(createManageUsersPane(welcomeLabel));
+    });
+
+    VBox vbox = new VBox(10); // 10 is the spacing between components
+    vbox.getChildren().addAll(idField, nameField, removeUserBtn, goBackBtn);
+    vbox.setAlignment(Pos.CENTER);
+    stackPane.getChildren().clear();
+    stackPane.getChildren().add(vbox);
+}
+
+    @Override
+public void edit() {
+    VBox editUserMenu = new VBox(10);
+    editUserMenu.setAlignment(Pos.CENTER);
+    Label welcomeLabel = new Label("Edit User");
+    welcomeLabel.setStyle("-fx-font-size: 24;");
+
+    TextField userIdField = new TextField();
+    userIdField.setPromptText("User ID");
+
+    TextField userNameField = new TextField();
+    userNameField.setPromptText("User Name");
+
+    Button editUserBtn = createStyledButton("Edit User", event -> handleEditUserAction(userIdField, userNameField, editUserMenu, welcomeLabel));
+
+    editUserMenu.getChildren().addAll(
+            welcomeLabel,
+            userIdField,
+            userNameField,
+            editUserBtn
+    );
+
+    updateStack(editUserMenu);
+}
+
+    @Override
+    public void search() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private void handleSearchUsers(TextField searchField, ListView<String> listView) {
+    String searchTerm = searchField.getText().trim().toLowerCase();
+
+    if (searchTerm.isEmpty()) {
+        listView.getItems().clear();
+        return;
+    }
+
+    List<Users> matchingUsers = searchUsers(searchTerm);
+
+    if (matchingUsers.isEmpty()) {
+        listView.getItems().setAll("No users found matching the search term.");
+    } else {
+        List<String> userStrings = matchingUsers.stream()
+                .map(user -> "ID: " + user.getID() + ", Name: " + user.getName())
+                .collect(Collectors.toList());
+
+        listView.getItems().setAll(userStrings);
+    }
+}
 }
