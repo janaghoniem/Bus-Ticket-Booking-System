@@ -4,68 +4,33 @@
  */
 package project.trial;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import javafx.animation.TranslateTransition;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-
-/**
- *
- * @author jana
- */
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import static javafx.application.Application.launch;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.paint.Color;
+import project.trial.Admin;
+import project.trial.Booking;
+import project.trial.Users;
 public class NewFXMain extends Application {
-    
-    
+
+    private Admin admin;
+    private final StackPane stackPane = new StackPane();
+
     @Override
-    public void start(Stage primaryStage){
-                
-        //LOGIN - SIGNUP SARA
-        
-        //ADMIN PAGE MARIAM
-        //will have different buttons each one switching to one of the scenes below
-        
-        //MANAGE USERS BUTTON PAGE MARIAM
-        
-        //MANAGE VEHICLES BUTTON PAGE JANa
-        //MANAGE TRIPS BUTTON PAGE ROAA
-        
-        //MANAGE BOOKINGS BUTTON PAGE NOURAN
-        
-        //RECEPTIONIST PAGE MARIAM
-        
-        //MANAGE GUESTS BUTTON PAGE SARA
-
-        
-
-        //FOR TESTING - CHANGE THE PARAMETERS IF YOU NEED TO TEST YOUR OWN SCENE
-        
-        Admin admin = new Admin();
+public void start(Stage primaryStage) {
+    Admin admin = new Admin();
     admin.readUsersFromFile();
 
     BorderPane border = new BorderPane();
@@ -76,8 +41,7 @@ public class NewFXMain extends Application {
     menuBox.setAlignment(Pos.TOP_LEFT);
     border.setTop(menuBox);
 
-    Label welcomeLabel = new Label("Welcome, Admin!");
-    welcomeLabel.setStyle("-fx-font-size: 24;");
+    Label welcomeLabel = admin.createStyledLabel("Welcome, Admin!"); // Call the createStyledLabel method
     admin.getStackPane().getChildren().add(welcomeLabel);
     border.setCenter(admin.getStackPane());
 
@@ -88,14 +52,9 @@ public class NewFXMain extends Application {
     primaryStage.setTitle("Admin Dashboard");
     primaryStage.setScene(scene);
     primaryStage.show();
-        
-    }
+}
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         launch(args);
     }
-    
 }
