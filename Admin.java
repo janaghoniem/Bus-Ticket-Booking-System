@@ -58,9 +58,10 @@ import javafx.stage.Stage;
  * @author jana
  */
 public class Admin extends Users implements manages<Admin>{
-     public static VBox vehicleTable = new VBox();
+    public static VBox vehicleTable = new VBox();
     static ScrollPane scrollPane = new ScrollPane(vehicleTable);
-    
+    public static HBox horizontalLayoutBox = new HBox();
+
     public static final List<Users> users = new ArrayList<>();
     public static final List<Admin> admins = new ArrayList<>();
     private static final Scanner scanner = new Scanner(System.in);
