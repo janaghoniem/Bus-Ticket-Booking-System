@@ -577,6 +577,8 @@ public static void saveAdminsToFile() {
 }
     public static Scene managesVehicle()
     {
+        Vehicle.listlabelsinitialization();
+        vehicleTable.getChildren().add(Vehicle.listlabels);
         FlowPane vehicleSceneLayout = new FlowPane();
         vehicleSceneLayout.setStyle("-fx-background-color: #292525; -fx-background-image: url('file:/home/jana/Downloads/backtrial.jpg'); -fx-background-size: cover;");
         vehicleSceneLayout.setOrientation(Orientation.VERTICAL);
@@ -585,12 +587,11 @@ public static void saveAdminsToFile() {
         
         //IMAGES & ICONS
         try {
-            Image icon = new Image(new FileInputStream("C:/Users/Electronica Care/Pictures/504795_pia00135_orig_718331.jpg"));
-// IMAGEVIEW FOR THE ICON
-ImageView imageView = new ImageView(icon);
-imageView.setFitHeight(30);
-imageView.setPreserveRatio(true);
-
+            Image icon = new Image(new FileInputStream("/home/jana/Downloads/magnifier(2).png"));
+            //IMAGEVIEW FOR THE ICON
+            ImageView imageView = new ImageView(icon);
+            imageView.setFitHeight(30); 
+            imageView.setPreserveRatio(true);  
             
             //LABELS
             Label manageVehiclesLabel = new Label();
@@ -600,9 +601,14 @@ imageView.setPreserveRatio(true);
                         
             //VBOX
             scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; ");             
-            scrollPane.setFitToHeight(true);
+            //scrollPane.setFitToHeight(true);
+            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+            //scrollPane.lookup(".scroll-bar:vertical").setStyle("-fx-background-color: transparent;");
+            //scrollPane.lookup(".scroll-bar:vertical .thumb").setStyle("-fx-background-color: #ffb000;");
+            scrollPane.setMaxHeight(550);
             vehicleTable.setSpacing(10);
             vehicleTable.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+            //vehicleTable.setMaxHeight(200);
             Vehicle.readFromFile();
 
             
@@ -614,6 +620,12 @@ imageView.setPreserveRatio(true);
             searchBar.setStyle("-fx-background-color: rgba(0, 0, 0, 0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-border-width: 3px");
             searchBar.setFont(Font.font("Helvetica World", FontWeight.BOLD, 15));
             HBox.setHgrow(searchBar, Priority.ALWAYS);
+            
+            searchBar.setOnKeyTyped(eh -> 
+            {
+                Vehicle v = new Vehicle();
+                v.search();
+            });
             
             //ADD BUTTON
             Button addVehicle = new Button("Add Vehicle");
@@ -633,14 +645,13 @@ imageView.setPreserveRatio(true);
             
             //COMBO BOX
             ObservableList o;
-            o = FXCollections.observableArrayList("License Plate", "Category", "Number of Seats", "Price per Seat", "Driver's Name");
+            o = FXCollections.observableArrayList("General","License Plate", "Category", "Number of Seats", "Price per Seat", "Driver's Name");
             ComboBox searchBy = new ComboBox(o);
             searchBy.setStyle("-fx-background-color: #ffb000; -fx-border-color: #ffb000;");
             searchBy.setMaxWidth(200);
             searchBy.setValue("Search by...");
             HBox.setHgrow(searchBy, Priority.ALWAYS);
             
-            HBox horizontalLayoutBox = new HBox();
             HBox.setHgrow(horizontalLayoutBox, Priority.ALWAYS);
             
             horizontalLayoutBox.getChildren().addAll(addVehicle, searchBar, searchVehicle, searchBy);
@@ -648,31 +659,24 @@ imageView.setPreserveRatio(true);
             horizontalLayoutBox.setMaxHeight(100);
             horizontalLayoutBox.setAlignment(Pos.BASELINE_LEFT);
            
-            //ANIMATION (TRANSLATION??) OF ADD BUTTON SLIDING PANEL
-
-
-                        
             //ADDING ELEMENTS TO LAYOUT
-            vehicleSceneLayout.getChildren().addAll(manageVehiclesLabel, horizontalLayoutBox, Vehicle.addlayout, scrollPane);
+            vehicleSceneLayout.getChildren().addAll(manageVehiclesLabel, horizontalLayoutBox, Vehicle.addlayout,Vehicle.listlabels ,scrollPane);
             
             //SET ALIGNMENT
             vehicleSceneLayout.setVgap(10);
             vehicleSceneLayout.setPadding(new javafx.geometry.Insets(40, 40, 40, 40));
             
-            
-        
             //EVENT-HANDLING
             addVehicle.setOnAction(e ->
             {
                 Vehicle.addlayoutInitialization();
-            });
-            
-            
+            });  
 
         } catch (FileNotFoundException e) {
             System.out.println(e);
         }
-        Scene vehicleScene = new Scene(vehicleSceneLayout, 800, 800);
+        
+        Scene vehicleScene = new Scene(vehicleSceneLayout, 1500, 800);
         return vehicleScene;
     }
     
