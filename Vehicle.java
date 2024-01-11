@@ -4,8 +4,6 @@
  */
 package project.trial;
 import java.io.EOFException;
-import java.util.Scanner;
-import java.util.InputMismatchException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,18 +13,20 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Optional;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
+import javafx.animation.PauseTransition;
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -65,23 +65,23 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         MICROBUS
     }
     
-    transient Scanner scanner = new Scanner(System.in);
     private static HashMap<String, Vehicle> VehicleList = new HashMap<>(50);
     private static HashMap<Integer, Integer> AvailibilityMap = new HashMap<>(50);
         
     //NEEDED FOR MANAGE VEHICLES
     public static GridPane addlayout = new GridPane();
     private static boolean slidingLayoutShown = false;
-    private static HBox listlabels = new HBox();
+    public static HBox listlabels = new HBox();
         
-    private static final File vehicleFile = new File("vehicleFile.dat");
+    private static File vehicleFile = new File("vehicleFile.dat");
     private String License_plate;
     private vehicleCategory Category;
     private int Number_of_seats;
     private double ticket_price;
     private int num_of_available_seats;
-    private int booking;
+    private int booking; //what if someone has one booking for the vehicle but with two tickets
     private String BusDriver_name;
+    private LocalDate datePurchased;
 
 
     public Vehicle() {
@@ -123,6 +123,11 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         return BusDriver_name;
     }
 
+    public LocalDate getDatePurchased() {
+        return datePurchased;
+    }
+    
+
     public void setLicense_plate(String License_plate) {
         this.License_plate = License_plate;
     }
@@ -142,6 +147,11 @@ public class Vehicle implements manages<Vehicle>, Serializable {
     public void setBusDriver_name(String BusDriver_name) {
         this.BusDriver_name = BusDriver_name;
     }
+
+    public void setDatePurchased(LocalDate datePurchased) {
+        this.datePurchased = datePurchased;
+    }
+    
     
     public static void listlabelsinitialization()
     {
@@ -174,15 +184,22 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         driverName.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
         driverName.setPrefWidth(250);
         HBox.setHgrow(driverName, Priority.ALWAYS);
-            
+        
+        Label datePurchased = new Label("DATE PURCHASED");
+        datePurchased.setTextFill(Color.web("#ffb000"));
+        datePurchased.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        datePurchased.setPrefWidth(250);
+        HBox.setHgrow(datePurchased, Priority.ALWAYS);            
         //HBox
-        listlabels.getChildren().addAll(licensePlate, category, numberofSeats, ticketPrice, driverName);
-        listlabels.setSpacing(70);
+        listlabels.getChildren().addAll(licensePlate, category, numberofSeats, ticketPrice, driverName, datePurchased);
+        listlabels.setSpacing(20);
     }
     
     
     public static void addlayoutInitialization()
     {
+        if(!slidingLayoutShown)
+        {
         Label LicensePlate = new Label("License Plate:");
         LicensePlate.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
         TextField LicensePlateString = new TextField();
@@ -214,6 +231,7 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         Label DatePurchased = new Label("Date Purchased");
         DatePurchased.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
         DatePicker datePurchased = new DatePicker();
+        datePurchased.setValue(LocalDate.now());
             
         Button saveButton = new Button("SAVE");
         saveButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
@@ -238,38 +256,120 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         addlayout.add(DatePurchased, 2, 2);
         addlayout.add(datePurchased, 3, 2);
         addlayout.add(saveButton, 0, 3);
-        addlayout.add(clearButton, 1, 3);           
-        addlayout.add(cancelButton, 2, 3);
+        addlayout.add(clearButton, 2, 3);           
+        addlayout.add(cancelButton, 1, 3);
         addlayout.setVisible(false);
         
-        addlayout.setHgap(30);
-        addlayout.setVgap(10);
+        addlayout.setHgap(50);
+        addlayout.setVgap(15);
         addlayout.setAlignment(Pos.TOP_LEFT);
         
         addlayout.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-padding: 10px;");
-                
+             
+        
         saveButton.setOnAction(e -> {
+        int row = 4;
+        removeAllErrorLabels();
+        resetStyle(DriverNameString);
+        resetStyle(LicensePlateString);
+
+        if (isValidLicensePlate(LicensePlateString.getText()) && !DriverNameString.getText().isEmpty()) {
+            String licensenumber = LicensePlateString.getText().substring(0, 3);
+            String licenseletters =  LicensePlateString.getText().substring(3).toUpperCase();
+            StringBuilder validLicensePlate = new StringBuilder();
+            validLicensePlate.append(licensenumber);
+            validLicensePlate.append(licenseletters);        
+        
             Vehicle newVehicle = new Vehicle();
-            newVehicle.setLicense_plate(LicensePlateString.getText());
+            newVehicle.setLicense_plate(validLicensePlate.toString());
             newVehicle.setCategory(Vehicle.vehicleCategory.valueOf(CategoryString.getValue().toString().toUpperCase()));
             newVehicle.setNumber_of_seats(seatsspinner.getValue());
             newVehicle.setTicket_price(pricespinner.getValue());
             newVehicle.setBusDriver_name(DriverNameString.getText());
+            newVehicle.setDatePurchased(datePurchased.getValue());
             newVehicle.add();
-        });
-            
+        } else {
+
+            if (DriverNameString.getText().isEmpty()) {
+                showErrorLabel("*Driver's Name Field cannot be empty.", row, DriverNameString);
+                row++;
+            } else {
+                resetStyle(DriverNameString);
+            }
+
+            if (!isValidLicensePlate(LicensePlateString.getText())) {
+                showErrorLabel("*Invalid License Plate.", row, LicensePlateString);
+                row++;
+
+                if (LicensePlateString.getText().isEmpty()) {
+                    showErrorLabel("*License Plate Field cannot be empty.", row, LicensePlateString);
+                    row++;
+                } else {
+                    showErrorLabel("*Valid license plate: 4 numbers, 3 letters.", row, LicensePlateString);
+                }
+            } else {
+                resetStyle(LicensePlateString);
+            }
+        }});
+        
         clearButton.setOnAction(e -> {
             LicensePlateString.clear();
+            CategoryString.setValue("Bus");
+            seatsspinner.setValueFactory(seatsvalueFactory);
+            pricespinner.setValueFactory(pricevalueFactory);        
+            datePurchased.setValue(LocalDate.now());
             DriverNameString.clear();
         });
             
         cancelButton.setOnAction(e -> 
         {
-            slideUp();
+            removeAllErrorLabels();
+            resetStyle(DriverNameString);
+            resetStyle(LicensePlateString);
+
+            PauseTransition pause = new PauseTransition(Duration.seconds(0.014));
+            pause.setOnFinished(event -> slideUp());
+            pause.play();
+
         });
         
-        
         slideDown();
+      }
+    }
+    
+    private static void showErrorLabel(String errorMessage, int row, TextField textField) {
+        textField.setStyle("-fx-background-color: rgba(0,0,0,0);-fx-border-color: red;-fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        Label errorLabel = new Label(errorMessage);
+        errorLabel.setStyle("-fx-background-color: rgba(0,0,0,0);-fx-text-fill: red; -fx-font-family: 'Helvetica World';");
+        addlayout.add(errorLabel, 0, row);
+    }
+
+    private static void resetStyle(TextField textField) {
+        System.out.println("Resetting style for: " + textField.getText());
+        textField.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+    }
+    
+    public static void removeErrorLabel(String labelText) {
+        Iterator<Node> iterator = addlayout.getChildren().iterator();
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+
+            if (node instanceof Label) {
+                Label label = (Label) node;
+
+                if (label.getText().equals(labelText)) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+    
+    public static void removeAllErrorLabels()
+    {
+        removeErrorLabel("*Driver's Name Field cannot be empty.");
+        removeErrorLabel("*License Plate Field cannot be empty.");
+        removeErrorLabel("*Invalid License Plate.");
+        removeErrorLabel("*Valid license plate: 4 numbers, 3 letters.");
     }
     
     public static void slideDown() {
@@ -277,15 +377,18 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             Duration slideduration = new Duration(300);
             Duration fadeduration = new Duration(600);
 
-            double panelHeight = addlayout.getBoundsInParent().getHeight();
-
             // Slide down transition for the panel
             TranslateTransition slideDownTransition = new TranslateTransition(slideduration, addlayout);
             slideDownTransition.setToY(0);
 
-            // Slide down transition for Admin.vehicleTable
-            TranslateTransition slideDownTransition2 = new TranslateTransition(slideduration, Admin.scrollPane);
+            //Slide down transition for Vehicle.listlabels (el labels el heya license plate..)
+            TranslateTransition slideDownTransition2 = new TranslateTransition(slideduration, listlabels);
             slideDownTransition2.setToY(0.0);
+            
+            // Slide down transition for Admin.vehicleTable
+            //Admin.scrollPane.setMaxHeight(400);
+            TranslateTransition slideDownTransition3 = new TranslateTransition(slideduration, Admin.scrollPane);
+            slideDownTransition3.setToY(0.0);
 
             // Fade in transition for the panel
             FadeTransition fadeInTransition = new FadeTransition(fadeduration, addlayout);
@@ -294,7 +397,7 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             addlayout.setVisible(true);
 
             // Play both transitions simultaneously
-             ParallelTransition parallelTransition = new ParallelTransition(slideDownTransition, slideDownTransition2, fadeInTransition);
+            ParallelTransition parallelTransition = new ParallelTransition(slideDownTransition, slideDownTransition2,slideDownTransition3, fadeInTransition);
             parallelTransition.play();
             slidingLayoutShown = true;
         }
@@ -311,13 +414,17 @@ public class Vehicle implements manages<Vehicle>, Serializable {
 
             TranslateTransition slideUpTransition2 = new TranslateTransition(slideduration, Admin.scrollPane);
             slideUpTransition2.setToY(-panelHeight);
+            //Admin.scrollPane.setMaxHeight(700);
+            
+            TranslateTransition slideUpTransition3 = new TranslateTransition(slideduration, listlabels);
+            slideUpTransition3.setToY(-panelHeight);
 
             FadeTransition fadeOutTransition = new FadeTransition(fadeduration, addlayout);
             fadeOutTransition.setToValue(0.0);
 
             fadeOutTransition.setOnFinished(e -> addlayout.setVisible(false));
 
-            ParallelTransition parallelTransition = new ParallelTransition(slideUpTransition, slideUpTransition2, fadeOutTransition);
+            ParallelTransition parallelTransition = new ParallelTransition(slideUpTransition, slideUpTransition2, slideUpTransition3, fadeOutTransition);
             parallelTransition.setOnFinished(event -> Admin.scrollPane.setTranslateY(-panelHeight));
             parallelTransition.play();
             slidingLayoutShown = false;
@@ -339,26 +446,21 @@ public class Vehicle implements manages<Vehicle>, Serializable {
 
             confirmation.getButtonTypes().setAll(replaceButton, cancelButton);
 
-            confirmation.showAndWait().ifPresent(response -> {
-                if (response == cancelButton) {
-                    return;
-                }
-            });
+            Optional<ButtonType> result = confirmation.showAndWait();
+            if (result.isPresent() && result.get() == cancelButton) {
+                return;
+            }
         }
         
+        System.out.println("cancel debugging statement");
         VehicleList.put(this.License_plate, this);
+        this.rowDisplay();
         System.out.println("Vehicle added successfully.");
-        try {
-            Vehicle.displayVehicles();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Vehicle.class.getName()).log(Level.SEVERE, null, ex);
-        }
         System.out.println("neshoof kam object 3andena: ");
         for(Vehicle v: Vehicle.VehicleList.values())
         {
             System.out.println(v.License_plate);
         }
-        updateFile();
     }
 
 
@@ -366,18 +468,17 @@ public class Vehicle implements manages<Vehicle>, Serializable {
     @Override
     public void remove()
     {
-           
         VehicleList.remove(this.License_plate);
         System.out.println("Vehicle removed successfully.");
-        updateFile();
     }
     
     @Override
     public void edit()
     {
-        Vehicle editedVehicle = VehicleList.get(this.License_plate);
+        System.out.println("edit function entered");
+        
         Stage dialogStage = new Stage();
-        dialogStage.initModality(Modality.WINDOW_MODAL);
+        dialogStage.initModality(Modality.APPLICATION_MODAL);
         dialogStage.initStyle(StageStyle.UTILITY);
 
         Label LicensePlate = new Label("License Plate:");
@@ -385,8 +486,8 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         TextField LicensePlateString = new TextField(this.License_plate);
         LicensePlateString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-font-family: 'Helvetica World';");
             
-        Label Category = new Label("Category:");
-        Category.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+        Label BusCategory = new Label("Category:");
+        BusCategory.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
         ObservableList oo = FXCollections.observableArrayList("MicroBus", "MiniBus", "Bus", "MegaBus");
         ComboBox CategoryString = new ComboBox(oo);       
         CategoryString.setValue(this.Category);
@@ -419,7 +520,7 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         GridPane editpane = new GridPane();
         editpane.add(LicensePlate, 0, 0);
         editpane.add(LicensePlateString, 1, 0);
-        editpane.add(Category, 0, 1);
+        editpane.add(BusCategory, 0, 1);
         editpane.add(CategoryString, 1, 1);
         editpane.add(NumberofSeats, 0, 2);
         editpane.add(seatsspinner, 1, 2);
@@ -436,266 +537,313 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         
         editpane.setStyle("-fx-background-color: #090D26; -fx-padding: 10px;");
         
-        Scene editScene = new Scene(editpane, 300, 300);
-        dialogStage.setScene(editScene);
-        dialogStage.setTitle("Edit Vehicle");
-        dialogStage.show();
-
-        
         applyButton.setOnAction(ev -> 
         {
-            editedVehicle.setLicense_plate(LicensePlateString.getText());
-            editedVehicle.setCategory(Vehicle.vehicleCategory.valueOf(CategoryString.getValue().toString().toUpperCase()));
-            editedVehicle.setNumber_of_seats(seatsspinner.getValue());
-            editedVehicle.setTicket_price(pricespinner.getValue());
-            editedVehicle.setBusDriver_name(DriverNameString.getText());
-            try {
-                displayVehicles();
-            } catch (FileNotFoundException ex) {
-                System.out.println(ex);;
-            }
-            dialogStage.close();
-        });
-        
+            System.out.println("apply button clicked");
+            if (isValidLicensePlate(LicensePlateString.getText()) && !DriverNameString.getText().isEmpty()) 
+            {
+                System.out.println("license plate is valid");
+                
+                //edit gui row
+                for (Node element : Admin.vehicleTable.getChildren()) {
+                    if (element instanceof HBox) {
+                        System.out.println("found first hbox");
+                        HBox hbox = (HBox) element;
+                        if (hbox.getChildren().get(0) instanceof HBox) {
+                            System.out.println("inner hbox found");
+                            HBox innerHBox = (HBox) hbox.getChildren().get(0);
+                            if (innerHBox.getChildren().get(0) instanceof Label) {
+                                System.out.println("label found");
+                                Label licenseLabel = (Label) innerHBox.getChildren().get(0);
+                                if (licenseLabel.getText().equals(this.getLicense_plate())) {
+                                    System.out.println("lisence plate found.");
+                                    
+                                    this.setLicense_plate(LicensePlateString.getText());
+                                    Label updatedLPlbl = new Label(LicensePlateString.getText());
+                                    updatedLPlbl.setTextFill(Color.web("white"));
+                                    updatedLPlbl.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+                                    updatedLPlbl.setPrefWidth(250);
 
+                                    this.setCategory(Vehicle.vehicleCategory.valueOf(CategoryString.getValue().toString().toUpperCase()));
+                                    Label updatedCAlbl = new Label(CategoryString.getValue().toString());
+                                    updatedCAlbl.setTextFill(Color.web("white"));
+                                    updatedCAlbl.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+                                    updatedCAlbl.setPrefWidth(250);
+                                
+                                    this.setNumber_of_seats(seatsspinner.getValue());
+                                    Label updatedNSlbl = new Label(seatsspinner.getValue().toString());
+                                    updatedNSlbl.setTextFill(Color.web("white"));
+                                    updatedNSlbl.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+                                    updatedNSlbl.setPrefWidth(250);
+                                
+                                    this.setTicket_price(pricespinner.getValue());
+                                    Label updatedTPlbl = new Label(pricespinner.getValue().toString());
+                                    updatedTPlbl.setTextFill(Color.web("white"));
+                                    updatedTPlbl.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+                                    updatedTPlbl.setPrefWidth(250);
+                                
+                                    this.setBusDriver_name(DriverNameString.getText());
+                                    Label updatedBDlbl = new Label(DriverNameString.getText());
+                                    updatedBDlbl.setTextFill(Color.web("white"));
+                                    updatedBDlbl.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+                                    updatedBDlbl.setPrefWidth(250);
+                                
+                                    innerHBox.getChildren().set(0, updatedLPlbl);
+                                    innerHBox.getChildren().set(1, updatedCAlbl);
+                                    innerHBox.getChildren().set(2, updatedNSlbl);
+                                    innerHBox.getChildren().set(3, updatedTPlbl);
+                                    innerHBox.getChildren().set(4, updatedBDlbl);
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                              
+                System.out.println("hashmap edited successfully.");
+                dialogStage.close();
+                
+            } else {
+                System.out.println("validation check entered.");
+                if (DriverNameString.getText().isEmpty()) {
+                    DriverNameString.setStyle("-fx-background-color: rgba(0,0,0,0);-fx-text-fill: #ffb000; -fx-border-color: red; -fx-font-family: 'Helvetica World';");
+                } else {
+                    DriverNameString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-border-color: #ffb000; -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+                }
+
+                if (LicensePlateString.getText().isEmpty() || !isValidLicensePlate(LicensePlateString.getText())) {
+                    LicensePlateString.setStyle("-fx-background-color: rgba(0,0,0,0);-fx-text-fill: #ffb000; -fx-border-color: red; -fx-font-family: 'Helvetica World';");
+                } else {
+                    LicensePlateString.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
+                }
+            }
+        });
         
         cancelButton.setOnAction(event -> 
         {
+            System.out.println("cancel button clicked");
             dialogStage.close();
         });
+                
+        Scene editScene = new Scene(editpane, 500, 300);
+        dialogStage.setScene(editScene);
+        dialogStage.setTitle("Edit Vehicle");
+        dialogStage.showAndWait();
+
+        
     }
     
     @Override
     public void search()        
     {
-        boolean isFound = false;
-        boolean input = false;
-        int s = 0;
-        String again = "yes";
-        String tempstring;
-        int tempint;
-        if(VehicleList.isEmpty())
-        {
-            System.out.println("No vehicles exist. Would you like to start adding vehicles?");
-            String addresponse = scanner.next();
-            while(!addresponse.equalsIgnoreCase("yes") && !addresponse.equalsIgnoreCase("no"))
-            {
-                System.out.println("Invalid input. Please enter 'yes' if you would like to start adding vehicles or 'no' if you would like to stop: ");
-                addresponse = scanner.next();
-            }            
+        TextField searchBar = (TextField) Admin.horizontalLayoutBox.getChildren().get(1);
+        ComboBox<String> searchBy = (ComboBox<String>) Admin.horizontalLayoutBox.getChildren().get(3);
+        String searchFilter = searchBy.getValue();
+        Admin.vehicleTable.getChildren().clear();
+        String searchText = searchBar.getText().toLowerCase();
         
-            if(addresponse.equalsIgnoreCase("yes"))
-            {
-                this.add();
-                again = "no";
-            }
-        }
-        while(again.equalsIgnoreCase("yes") && !VehicleList.isEmpty())
+        switch (searchFilter)
         {
-          while(!input)
-          {
-            try
+            case "License Plate":
             {
-                System.out.println("What field do wish to search by: ");
-                System.out.println("1. License plate ");
-                System.out.println("2. Vehicle category");
-                System.out.println("3. Number of seats");
-                System.out.println("4. Ticket prices");
-                System.out.println("5. Bus Driver");
-                s = scanner.nextInt();
-                input = true;
-            }
-            catch(InputMismatchException e)
-            {
-                System.out.println("Invalid input. Please try again...");
-            } 
-          }  
-      
-        switch (s)
-        {
-          case 1: 
-          {
-              while(isFound == false)
-              {
-                  System.out.print("Enter the license plate you want to search by: ");
-                  tempstring = scanner.next();
-                  if(VehicleList.containsKey(tempstring))
-                  {
-                    isFound = true;
-                    printResults(VehicleList.get(tempstring));
-                  }
-              }
-              break;
-            }
-          
-            case 2:
-            {
-              while(isFound == false)
-              {
-                  System.out.print("Enter the vehicle category you want to search by: ");
-                  tempstring = scanner.next();
-                  for(Vehicle v: VehicleList.values())
-                  {
-                      if((v.Category.name()).equalsIgnoreCase(tempstring))
-                      {
-                        isFound = true;
-                        printResults(v);
-                      }     
-                  }
-              }
-              break;      
-            }
-            
-            case 3:
-            {
-              while(isFound == false)
-              {
-                  System.out.print("Enter the number of seats you want to search by: ");
-                  tempint = scanner.nextInt();
-                  for(Vehicle v: VehicleList.values())
-                  {
-                      if((v.Number_of_seats) == tempint)
-                      {
-                        isFound = true;
-                        printResults(v);
-                      }     
-                  }
-              }
-              break;      
-            }
-          
-            case 4:
-            {
-              while(isFound == false)
-              {
-                  System.out.print("Enter the ticket price you want to search by: ");
-                  tempint = scanner.nextInt();
-                  for(Vehicle v: VehicleList.values())
-                  {
-                      if(v.ticket_price == tempint)
-                      {
-                        isFound = true;
-                        printResults(v);
-                      }     
-                  }
-              }
-              break;      
-            }
-            
-            case 5:
-            {
-                while(isFound == false)
+                for(String s: VehicleList.keySet())
                 {
-                    System.out.println("Enter the bus driver you want to search by: ");
-                    tempstring = scanner.next();
-                    for(Vehicle v: VehicleList.values())
+                    if(s.toLowerCase().startsWith(searchText))
                     {
-                      if(v.BusDriver_name.equalsIgnoreCase(tempstring))
-                      {
-                        isFound = true;
-                        printResults(v);
-                      }     
-                    }              
+                        Vehicle v = VehicleList.get(s);
+                        v.rowDisplay();
+                    }
                 }
+                break;
+            }
+            case "Category": 
+            {
+                for(Vehicle v: VehicleList.values())
+                {
+                    if(String.valueOf(v.Category).toLowerCase().startsWith(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                }
+                break;
+            }
+            case "Number of Seats": 
+            {
+                for(Vehicle v: VehicleList.values())
+                {
+                    if(String.valueOf(v.Number_of_seats).toLowerCase().startsWith(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                }
+                break;
+            }
+            case "Price per Seat": 
+            {
+                for(Vehicle v: VehicleList.values())
+                {
+                    if(String.valueOf(v.ticket_price).toLowerCase().startsWith(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                }
+                break;
+            }
+            case "Driver's Name": 
+            {
+                for(Vehicle v: VehicleList.values())
+                {
+                    if(v.BusDriver_name.toLowerCase().startsWith(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                }
+                break;
+            }
+            default:
+            {
+                for(Vehicle v: VehicleList.values())
+                {
+                    if(v.License_plate.toLowerCase().startsWith(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                    else if(String.valueOf(v.Category).toLowerCase().startsWith(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                    else if(String.valueOf(v.Number_of_seats).toLowerCase().startsWith(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                    else if(String.valueOf(v.ticket_price).toLowerCase().startsWith(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                    else if(v.BusDriver_name.toLowerCase().startsWith(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                }
+                break;
             }
         }
-        if(isFound == false)
-        {
-            System.out.println("No Vehicle matches the entered license plate. Would you like to try again? ");
-            scanner.next();
-            while(!scanner.next().equalsIgnoreCase("yes") && !scanner.next().equalsIgnoreCase("no"))
+    }
+    
+//    public static void displayVehicles() throws FileNotFoundException {
+//    
+//        Admin.vehicleTable.getChildren().clear();
+//    
+//        for (Vehicle v : VehicleList.values()) {
+//            v.rowDisplay();
+//        }
+//    }
+
+
+    public void rowDisplay()
+    {
+        try {
+            Label licensePlate = new Label(this.getLicense_plate());
+            licensePlate.setTextFill(Color.web("white"));
+            licensePlate.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+            licensePlate.setPrefWidth(250);
+            HBox.setHgrow(licensePlate, Priority.ALWAYS);
+            
+            Label category = new Label(this.getCategory().toString());
+            category.setTextFill(Color.web("white"));
+            category.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+            category.setPrefWidth(250);
+            HBox.setHgrow(category, Priority.ALWAYS);
+            
+            Label numberofSeats = new Label(String.valueOf(this.getNumber_of_seats()));
+            numberofSeats.setTextFill(Color.web("white"));
+            numberofSeats.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+            numberofSeats.setPrefWidth(250);
+            HBox.setHgrow(numberofSeats, Priority.ALWAYS);
+            
+            Label ticketPrice = new Label(String.valueOf(this.getTicket_price()));
+            ticketPrice.setTextFill(Color.web("white"));
+            ticketPrice.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+            ticketPrice.setPrefWidth(250);
+            HBox.setHgrow(ticketPrice, Priority.ALWAYS);
+            
+            Label driverName = new Label(this.getBusDriver_name());
+            driverName.setTextFill(Color.web("white"));
+            driverName.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+            driverName.setPrefWidth(250);
+            HBox.setHgrow(driverName, Priority.ALWAYS);
+            
+            Label DatePurchased = new Label(this.getDatePurchased().toString());
+            DatePurchased.setTextFill(Color.web("white"));
+            DatePurchased.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+            DatePurchased.setPrefWidth(250);
+            HBox.setHgrow(DatePurchased, Priority.ALWAYS);            
+            
+            //icons
+            Image editicon = new Image(new FileInputStream("/home/jana/Downloads/pen.png"));
+            ImageView editimageView = new ImageView(editicon);
+            editimageView.setFitHeight(30);
+            editimageView.setPreserveRatio(true);
+            
+            Image deleteicon = new Image(new FileInputStream("/home/jana/Downloads/bin(3).png"));
+            ImageView deleteimageView = new ImageView(deleteicon);
+            deleteimageView.setFitHeight(30);
+            deleteimageView.setPreserveRatio(true);                  
+            
+            Button editButton = new Button();
+            editButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+            editButton.setGraphic(editimageView);
+            
+            Button deleteButton = new Button();
+            deleteButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+            deleteButton.setGraphic(deleteimageView);
+            
+            Button viewReportButton = new Button("View Report");
+            viewReportButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+            //viewReportButton.setGraphic(reportimageView);
+            
+            String normalStyle = "-fx-text-fill: white; -fx-background-color: rgba(0, 0, 0, 0);";
+            String hoverStyle = "-fx-text-fill: #ffb000; -fx-background-color: rgba(0, 0, 0, 0);";
+            viewReportButton.setStyle(normalStyle);
+            
+            HBox tempHBox = new HBox(new HBox(30,licensePlate, category, numberofSeats, ticketPrice, driverName,DatePurchased), new HBox(10,viewReportButton, editButton, deleteButton));
+            Admin.vehicleTable.getChildren().add(tempHBox);
+            
+            //EDIT BUTTON EVENT-HANDLING
+            editButton.setOnAction(e -> {
+                this.edit();
+            });
+            
+            //DELETE BUTTON EVENT-HANDLING
+            deleteButton.setOnAction(e -> {
+                Admin.vehicleTable.getChildren().remove(tempHBox);
+                this.remove();
+            });
+            
+            //VIEW REPORT BUTTON EVENT-HANDLING
+            //hover event
+            viewReportButton.setOnMouseEntered(eh ->
             {
-                System.out.println("Invalid input. Please enter 'yes' if you would like to continue searching vehicles or 'no' if you would like to stop: ");
-                scanner.next();
-            }        
-        }  
-        
-        System.out.print("Would you like to search for another item? ");
-        again = scanner.next();
-        while(!again.equalsIgnoreCase("yes") && !again.equalsIgnoreCase("no"))
-        {
-            System.out.println("Invalid input. Please enter 'yes' if you would like to continue searching for vehicles or 'no' if you would like to stop: ");
-            again = scanner.next();
-        } 
-        if(again.equalsIgnoreCase("yes"))
-        {
-            input = false;
+                viewReportButton.setStyle(hoverStyle);
+            });
+            
+            //non-hover event
+            viewReportButton.setOnMouseExited(eh ->
+            {
+                viewReportButton.setStyle(normalStyle);
+            });
+            
+            //clicked event
+            viewReportButton.setOnAction(eh ->
+            {
+                this.viewReports();
+            });
+            
+        } catch (FileNotFoundException ex) {
+            System.out.println(ex);
         }
-      }  
     }
-    
-public static void displayVehicles() throws FileNotFoundException {
-    
-    listlabelsinitialization();
-    Admin.vehicleTable.getChildren().clear();
-    Admin.vehicleTable.getChildren().add(listlabels);
-    
-    for (Vehicle v : VehicleList.values()) {
-        Label licensePlate = new Label(v.getLicense_plate());
-        licensePlate.setTextFill(Color.web("white"));
-        licensePlate.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
-        licensePlate.setPrefWidth(250);
-        HBox.setHgrow(licensePlate, Priority.ALWAYS);
-        
-        Label category = new Label(v.getCategory().toString());
-        category.setTextFill(Color.web("white"));
-        category.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
-        category.setPrefWidth(250);
-        HBox.setHgrow(category, Priority.ALWAYS);
-        
-        Label numberofSeats = new Label(String.valueOf(v.getNumber_of_seats()));
-        numberofSeats.setTextFill(Color.web("white"));
-        numberofSeats.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
-        numberofSeats.setPrefWidth(250);
-        HBox.setHgrow(numberofSeats, Priority.ALWAYS);
-        
-        Label ticketPrice = new Label(String.valueOf(v.getTicket_price()));
-        ticketPrice.setTextFill(Color.web("white"));
-        ticketPrice.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
-        ticketPrice.setPrefWidth(250);
-        HBox.setHgrow(ticketPrice, Priority.ALWAYS);        
-
-        Label driverName = new Label(v.getBusDriver_name());
-        driverName.setTextFill(Color.web("white"));
-        driverName.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
-        driverName.setPrefWidth(250);
-        HBox.setHgrow(driverName, Priority.ALWAYS);
-        
-        //icons
-        Image editicon = new Image(new FileInputStream("/home/jana/Downloads/pen.png"));
-        ImageView editimageView = new ImageView(editicon);
-        editimageView.setFitHeight(30); 
-        editimageView.setPreserveRatio(true); 
-        
-        Image deleteicon = new Image(new FileInputStream("/home/jana/Downloads/bin(3).png"));
-        ImageView deleteimageView = new ImageView(deleteicon);
-        deleteimageView.setFitHeight(30); 
-        deleteimageView.setPreserveRatio(true);         
-
-        Button editButton = new Button();
-        editButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
-        editButton.setGraphic(editimageView);
-        
-        Button deleteButton = new Button();
-        deleteButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
-        deleteButton.setGraphic(deleteimageView);
-        
-        HBox tempHBox = new HBox(80,licensePlate, category, numberofSeats, ticketPrice, driverName, new HBox(10,editButton, deleteButton));
-        Admin.vehicleTable.getChildren().add(tempHBox);
-
-        
-        editButton.setOnAction(e -> {
-            v.edit();
-        });
-                
-        
-        deleteButton.setOnAction(e -> {
-            Admin.vehicleTable.getChildren().remove(tempHBox);
-            v.remove();
-        });
-    }
-}
-
     
     public static void initializeAvailibilityMap()
     {
@@ -755,28 +903,21 @@ public static void displayVehicles() throws FileNotFoundException {
         }
     }
     
-    public void numberofBookings(Vehicle vehicle, LocalDateTime start, LocalDateTime end){
-        if(VehicleList.containsKey(vehicle.getLicense_plate()))
+    public String numberofBookings(LocalDateTime start, LocalDateTime end){
+        int count = 0;
+        for(Booking b: Booking.getBook().values())
         {
-            int count = 0;
-            for(Booking b: Booking.getBook().values())
+            if(b.getLicense_plate().equals(this.getLicense_plate()) && (b.getBooking_time().isAfter(start) || b.getBooking_time().isEqual(start)) && (b.getBooking_time().isBefore(end) || b.getBooking_time().isEqual(end)))
             {
-                if(b.getLicense_plate().equals(vehicle.getLicense_plate()) && (b.getBooking_time().isAfter(start) || b.getBooking_time().isEqual(start)) && (b.getBooking_time().isBefore(end) || b.getBooking_time().isEqual(end)))
-                {
-                    count++;
-                }
+                count++;
             }
-            if (count == 0)
-            {
-                System.out.println("No booking exists for the given vehicle within the given time frame.");
-            }   
-            else
-                System.out.println("The vehicle's number of bookings within the given time frame is: " + count);
         }
-        else
+        if (count == 0)
         {
-            System.out.println("Vehicle does not exist.");
-        }
+            String none = "No booking exists for the given vehicle within the given time frame.";
+            return none;
+        }   
+        return String.valueOf(count);
     }
     
     public Vehicle mostBooked(LocalDateTime start, LocalDateTime end)
@@ -802,29 +943,22 @@ public static void displayVehicles() throws FileNotFoundException {
         return mostbooked;
     }
     
-    public void numberofTrips(Vehicle vehicle, LocalDateTime start, LocalDateTime end)
+    public String numberofTrips(LocalDateTime start, LocalDateTime end)
     {
-        if(VehicleList.containsKey(vehicle.getLicense_plate()))
+        int count = 0;
+        for(Trips t: Trips.TripsMap.values())
         {
-            int count = 0;
-            for(Trips t: Trips.TripsMap.values())
+            if(t.getVehicle_id().equals(this.getLicense_plate()) && (t.getDepartureDateTime().isAfter(start) || t.getDepartureDateTime().isEqual(start)) && (t.getDepartureDateTime().isBefore(end) || t.getDepartureDateTime().isEqual(end)))
             {
-                if(t.getVehicle_id().equals(vehicle.getLicense_plate()) && (t.getDepartureDateTime().isAfter(start) || t.getDepartureDateTime().isEqual(start)) && (t.getDepartureDateTime().isBefore(end) || t.getDepartureDateTime().isEqual(end)))
-                {
-                    count++;
-                }
+                count++;
             }
-            if (count == 0)
-            {
-                System.out.println("No trips exists for the given vehicle within the given time frame.");
-            }   
-            else
-                System.out.println("The vehicle's number of trips within the given time frame is: " + count);
         }
-        else
+        if (count == 0)
         {
-            System.out.println("Vehicle does not exist.");
-        }
+            String none = "No trip exists for the given vehicle within the given time frame.";
+            return none;
+        }   
+        return String.valueOf(count);
     }
         
     public Vehicle mostRevenue(LocalDateTime start, LocalDateTime end)
@@ -850,52 +984,119 @@ public static void displayVehicles() throws FileNotFoundException {
         return mostRevenue;
     }
     
-    
-      public void printResults(Vehicle v)
-      {
-            System.out.println("Search Results: ");
-            System.out.println(v);
-      }
-      
-      @Override
-      public String toString()
-      {
-        return ("License plate: " + License_plate +", Category: " + Category + ", Number of seats: " + Number_of_seats + ", Ticket price: " + ticket_price + ", Bus Driver: " + BusDriver_name);
-      }
-      
-      
-      //INCOMPLETE WHERES THE FILE???
-      public void viewReports()
-      {
-          System.out.print("Enter the license plate of the vehicle you want to view the report of: ");
-          String str = scanner.next(), tryagain = "";
-          LocalDateTime start, end;
-          while(tryagain.equalsIgnoreCase("yes"))
-          {
-            if(VehicleList.containsKey(str))
-            {
-                System.out.print("Enter the start date of the information you want within the report (dd-MM-yyyy): ");
-                start = LocalDateTime.parse(scanner.next(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                System.out.print("Enter the end date of the information you want within the report(dd-MM-yyyy): ");
-                end = LocalDateTime.parse(scanner.next(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                Vehicle vehicle = VehicleList.get(str);
-                System.out.println("Vehicle Category: " + vehicle.getCategory());
-                vehicle.numberofBookings(vehicle, start, end);
-                vehicle.numberofTrips(vehicle, start, end);
-                System.out.println("Most booked vehicle within the given time frame: " + vehicle.mostBooked(start, end));
-                System.out.println("Most revenue vehicle within the given time frame: " + vehicle.mostRevenue(start, end));
-            }
-            else
-            {
-                System.out.println("No vehicle with such a license plate exists. Would you like to try again?");
-                tryagain = scanner.next();
-            }              
-          }
 
-      }
+    @Override
+    public String toString()
+    {
+      return ("License plate: " + License_plate +", Category: " + Category + ", Number of seats: " + Number_of_seats + ", Ticket price: " + ticket_price + ", Bus Driver: " + BusDriver_name);
+    }
       
-public static void updateFile() {
-    int i = 0;
+      
+    public void viewReports() //UNFINISHED
+    {
+        Stage dialogStage = new Stage();
+        dialogStage.initModality(Modality.WINDOW_MODAL);
+        dialogStage.initStyle(StageStyle.UTILITY);
+        
+        Label LicensePlate = new Label("License Plate:");
+        LicensePlate.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");        
+        Label LicensePlatelbl = new Label(this.License_plate);
+        LicensePlatelbl.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: white; -fx-font-family: 'Helvetica World';");        
+        
+        Label BusCategory = new Label("Bus Category:");
+        BusCategory.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");        
+        Label Categorylbl = new Label(this.Category.toString());
+        Categorylbl.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: white; -fx-font-family: 'Helvetica World';");        
+        
+        Label startDate = new Label("Information Start Date:");
+        startDate.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");                
+        DatePicker start = new DatePicker();
+        start.setValue(this.datePurchased);
+        
+        Label endDate = new Label("Information End Date:");
+        endDate.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");                
+        DatePicker end = new DatePicker();
+        end.setValue(LocalDate.now());
+        
+        Label numberofTrips = new Label("Number of Trips:");
+        numberofTrips.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");                        
+        Label nooftrips = new Label();
+        nooftrips.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: white; -fx-font-family: 'Helvetica World';");                        
+        
+        Label numberofBookings = new Label("Number of Bookings:");
+        numberofBookings.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");                                
+        Label noofbookings = new Label();        
+        noofbookings.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: white; -fx-font-family: 'Helvetica World';");                        
+       
+        Label mostBookedVehicle = new Label("Most Booked Vehicle:");
+        mostBookedVehicle.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");                                
+        Label mostbooked = new Label();  
+        mostbooked.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: white; -fx-font-family: 'Helvetica World';");                        
+        
+        Label mostRevenueVehicle = new Label("Most Revenue Vehicle:");
+        mostRevenueVehicle.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");                                        
+        Label mostrevenue = new Label(); 
+        mostrevenue.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: white; -fx-font-family: 'Helvetica World';");                        
+
+        
+        if (start.getValue() != null && end.getValue() != null) {
+            nooftrips.setText(numberofTrips(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
+            noofbookings.setText(numberofBookings(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
+            mostbooked.setText(mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+            mostrevenue.setText(mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+        }
+        
+        start.setOnInputMethodTextChanged(eh ->
+        {
+            nooftrips.setText(numberofTrips(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
+            noofbookings.setText(numberofBookings(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
+            mostbooked.setText(mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+            mostrevenue.setText(mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+        });
+            
+        end.setOnInputMethodTextChanged(eh ->
+        {
+            nooftrips.setText(numberofTrips(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
+            noofbookings.setText(numberofBookings(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
+            mostbooked.setText(mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+            mostrevenue.setText(mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+        });
+        
+        GridPane gridpane = new GridPane();
+        gridpane.add(LicensePlate, 0, 0);
+        gridpane.add(LicensePlatelbl, 1, 0);
+        gridpane.add(BusCategory, 0, 1);
+        gridpane.add(Categorylbl, 1, 1);
+        gridpane.add(startDate, 0, 2);
+        gridpane.add(start, 1, 2);
+        gridpane.add(endDate, 0, 3);
+        gridpane.add(end, 1, 3);
+        gridpane.add(numberofTrips, 0, 4);
+        gridpane.add(nooftrips, 1, 4);
+        gridpane.add(numberofBookings, 0, 5);
+        gridpane.add(noofbookings, 1, 5);
+        gridpane.add(mostBookedVehicle, 0, 6);
+        gridpane.add(mostbooked, 1, 6);
+        gridpane.add(mostRevenueVehicle, 0, 7);
+        gridpane.add(mostrevenue, 1, 7);
+        
+        Insets in = new Insets(10);        
+        
+        gridpane.setHgap(20);
+        gridpane.setVgap(10);
+        gridpane.setPadding(in);
+        gridpane.setAlignment(Pos.CENTER);
+        gridpane.setStyle("-fx-background-color: #090D26; -fx-padding: 10px;");
+
+        
+        Scene scene = new Scene(gridpane, 810, 300);
+        dialogStage.setTitle("Vehicle Report");
+        dialogStage.setScene(scene);
+        dialogStage.show();
+    }
+      
+    public static void updateFile() {
+        int i = 0;
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(vehicleFile))) {
             for (Vehicle newVehicle : Vehicle.VehicleList.values()) {
                 out.writeObject(newVehicle);
@@ -907,40 +1108,32 @@ public static void updateFile() {
         }
     }
 
-public static void readFromFile() {
-    int i = 0;
-    try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(vehicleFile))) {
-        while (true) {
-            try {
-                Vehicle newVehicle = (Vehicle) in.readObject();
-                VehicleList.put(newVehicle.License_plate, newVehicle);
-                displayVehicles();
-                i++;
-            } catch (EOFException e) {
-                // End of file reached
-                System.out.println("number of objects read from file into hashmap: " + i);
-                break;
-            } catch (ClassNotFoundException | IOException e) {
-                System.out.println("Error reading object: " + e);
-                break;
+    public static void readFromFile() {
+        int i = 0;
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(vehicleFile))) {
+            while (true) {
+                try {
+                    Vehicle newVehicle = (Vehicle) in.readObject();
+                    newVehicle.add();
+                    i++;
+                } catch (EOFException e) {
+                    // End of file reached
+                    System.out.println("number of objects read from file into hashmap: " + i);
+                    break;
+                } catch (ClassNotFoundException | IOException e) {
+                    System.out.println("Error reading object: " + e);
+                    break;
+                }
             }
+        } catch (IOException e) {
+            System.out.println("File error: " + e);
         }
-    } catch (IOException e) {
-        System.out.println("File error: " + e);
+    }
+
+
+    private static boolean isValidLicensePlate(String licensePlate) {
+        return licensePlate.matches("[0-9]{4}[A-Za-z]{3}");
     }
 }
 
-
-public boolean isUnique(String tempLP)
-    {
-       for(Vehicle v: VehicleList.values())
-       {
-           if(tempLP.equalsIgnoreCase(v.License_plate))
-           {
-             return false;
-           }
-        }
-        return true;
-      }
-}
 
