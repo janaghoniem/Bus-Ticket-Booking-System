@@ -57,5 +57,6 @@ public void start(Stage primaryStage) {
     public static void main(String[] args) {
         Vehicle.readFromFile();
         launch(args);
+        Vehicle.updateFile();
     }
 }
