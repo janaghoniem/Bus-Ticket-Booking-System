@@ -15,10 +15,13 @@ import java.util.Random;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import javafx.animation.FadeTransition;
+import javafx.animation.ScaleTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -29,16 +32,24 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -48,9 +59,12 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 
 /**
@@ -58,22 +72,125 @@ import javafx.stage.Stage;
  * @author jana
  */
 public class Admin extends Users implements manages<Admin>{
-    public static VBox vehicleTable = new VBox();
+     public static VBox vehicleTable = new VBox();
     static ScrollPane scrollPane = new ScrollPane(vehicleTable);
-    public static HBox horizontalLayoutBox = new HBox();
-
+    
     public static final List<Users> users = new ArrayList<>();
     public static final List<Admin> admins = new ArrayList<>();
     private static final Scanner scanner = new Scanner(System.in);
     private static final int GUEST_PASSWORD_LENGTH = 5;
-//  private static final String GUEST_PASSWORD_PREFIX = "22";
     private final StackPane stackPane = new StackPane();
     private static final String BACKGROUND_IMAGE_PATH = "file:///C:/Users/Electronica Care/Pictures/504795_pia00135_orig_718331.jpg";
+    private VBox selectedMenuItem; // Track the selected menu item
 
     protected double Salary;
     protected int Bonus;
+private static final String BACKGROUND_COLOR = "#34495e"; 
+
+    public StackPane getStackPane() {
+        return stackPane;
+    }
+
+private VBox createMenuItem(String itemName) {
+        Label label = createStyledLabel(itemName);
+        VBox menuItem = new VBox(label);
+        menuItem.setAlignment(Pos.CENTER);
+        addHoverAnimation(label);
+        addSelectionAnimation(menuItem);
+
+        menuItem.setOnMouseClicked(event -> handleMenuItemClick(menuItem, itemName));
+
+        return menuItem;
+    }
+
+public VBox createSidebar() {
+    VBox sidebar = new VBox(15); // Increased spacing between items
+
+    // User Info
+   String imagePath = "C:/Users/Electronica Care/Pictures/Screenshots/Screenshot 2024-01-11 153015.png";
+    Image profileImage = new Image("file:" + imagePath);
+
+    // User Info
+    Circle profileIcon = new Circle(40);
+    profileIcon.setFill(new ImagePattern(profileImage)); 
+    Label userInfoLabel = createStyledLabel("Admin123");
+    VBox userInfoBox = new VBox(profileIcon, userInfoLabel); 
+    userInfoBox.setAlignment(Pos.CENTER);
+    userInfoBox.setSpacing(5);
+    sidebar.getChildren().add(userInfoBox);
+    Separator separator = new Separator();
+    separator.setMaxWidth(Double.MAX_VALUE);
+
+    VBox manageUsersItem = createMenuItem("Manage Users");
+        VBox manageTripsItem = createMenuItem("Manage Trips");
+        VBox manageVehiclesItem = createMenuItem("Manage Vehicles");
+
+        sidebar.setPadding(new Insets(150, 0, 0, 0));
+
+        sidebar.getChildren().addAll(separator, manageUsersItem, manageTripsItem, manageVehiclesItem);
+        sidebar.setStyle("-fx-background-color: " + BACKGROUND_COLOR);
+        sidebar.setMinWidth(150);
+
+        return sidebar;
+}
+
+private Label createStyledLabel(String text) {
+    Label label = new Label(text);
+    label.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
+    return label;
+}
+
+private void handleMenuItemClick(VBox selectedItem, String itemName) {
+        if (selectedMenuItem != null) {
+            selectedMenuItem.setBorder(null);
+        }
+
+        selectedMenuItem = selectedItem;
+        Border border = new Border(new BorderStroke(Color.WHITE, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT));
+        selectedMenuItem.setBorder(border);
+
+        if (itemName.equals("Manage Users")) {
+            ManageUsers();
+        } else if (itemName.equals("Manage Trips")) {
+            
+        } else if (itemName.equals("Manage Vehicles")) {
+            // logic for managing vehicles here
+            System.out.println("Manage Vehicles clicked");
+        }
+    }
+
+    private void addHoverAnimation(Label label) {
+        label.setOnMouseEntered(event -> {
+            label.setTextFill(Color.WHITE);
+            label.setEffect(new DropShadow(20, Color.WHITE));
+        });
+
+       /* label.setOnMouseExited(event -> {
+            label.setTextFill(Color.BLACK);
+            label.setEffect(null);
+        });*/
+    }
+
+    private void addSelectionAnimation(VBox menuItem) {
+        ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(100), menuItem);
+        scaleTransition.setFromX(1.0);
+        scaleTransition.setFromY(1.0);
+        scaleTransition.setToX(1.2);
+        scaleTransition.setToY(1.2);
+
+        menuItem.setOnMousePressed(event -> scaleTransition.play());
+
+     menuItem.setOnMouseReleased(event -> {
+    scaleTransition.setToX(1.0);
+    scaleTransition.setToY(1.0);
+    scaleTransition.play();
+});
+    }
+
 
     public Admin(){
+                readUsersFromFile();
+
     }
     
     public Admin(int id, String password, String name) {
@@ -113,113 +230,99 @@ public class Admin extends Users implements manages<Admin>{
     public static List<Users> getUsers() {
         return users;
     }
-public void toggleMenu(BorderPane border) {
-    VBox menuVBox = (VBox) border.getLeft();
 
-    if (menuVBox == null) {
-        menuVBox = createMenuVBox();
-        border.setLeft(menuVBox);
-    } else {
-        border.setLeft(null);
-    }
+private void setSceneBackground(VBox container) {
+    String imagePath = "C:\\Users\\Electronica Care\\Pictures\\Screenshots\\Screenshot 2024-01-07 055407.png";
+
+    Image backgroundImage = new Image("file:" + imagePath);
+
+    BackgroundImage background = new BackgroundImage(
+            backgroundImage,
+            BackgroundRepeat.NO_REPEAT,
+            BackgroundRepeat.NO_REPEAT,
+            BackgroundPosition.DEFAULT,
+            BackgroundSize.DEFAULT
+    );
+
+    Background backgroundWithImage = new Background(background);
+
+    container.setBackground(backgroundWithImage);
 }
-public StackPane getStackPane() {
-    return stackPane;
-}
-
-private VBox createMenuVBox() {
-    VBox menuVBox = new VBox(10);
-
-    Button manageUsersBtn = new Button("Manage Users");
-    manageUsersBtn.setOnAction(event -> ManageUsers());
-
-    Button manageTripsBtn = new Button("Manage Trips");
-    manageTripsBtn.setOnAction(event -> handleManageTrips());
-
-    Button manageVehiclesBtn = new Button("Manage Vehicles");
-    manageVehiclesBtn.setOnAction(event -> {
-    Scene vehicleScene = managesVehicle();
-    Stage primaryStage = (Stage) manageVehiclesBtn.getScene().getWindow(); // Get the current stage
-    primaryStage.setScene(vehicleScene);
-});
-
-    menuVBox.getChildren().addAll(manageUsersBtn, manageTripsBtn, manageVehiclesBtn);
-
-    return menuVBox;
-}
-  private void setSceneBackground(VBox container) {
-        String imagePath = "C:\\Users\\Electronica Care\\Pictures\\Screenshots\\Screenshot 2024-01-07 055407.png";
-
-        Image backgroundImage = new Image("file:" + imagePath);
-
-        BackgroundImage background = new BackgroundImage(
-                backgroundImage,
-                BackgroundRepeat.NO_REPEAT,
-                BackgroundRepeat.NO_REPEAT,
-                BackgroundPosition.DEFAULT,
-                BackgroundSize.DEFAULT
-        );
-
-        Background backgroundWithImage = new Background(background);
-
-        container.setBackground(backgroundWithImage);
-    }
 
 private void ManageUsers() {
+        readUsersFromFile(); 
+
     VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
     stackPane.getChildren().clear();
     stackPane.getChildren().add(manageUsersMenu);
     setSceneBackground(manageUsersMenu);
 }
 
-private Label createStyledLabel(String text) {
+public Label createtheStyledLabel(String text) {
     Label styledLabel = new Label(text);
     styledLabel.setStyle("-fx-font-size: 40; -fx-font-weight: bold; -fx-text-fill: white;");
     return styledLabel;
 }
 
 private VBox createManageUsersPane(Label welcomeLabel) {
-    VBox manageUsersMenu = new VBox(10);
-    manageUsersMenu.setAlignment(Pos.CENTER);
+    VBox manageUsersMenu = new VBox(20); // Increased vertical spacing
+    manageUsersMenu.setAlignment(Pos.TOP_CENTER); // Set alignment to TOP_CENTER
+    manageUsersMenu.setPadding(new Insets(30, 0, 0, 0)); // Added padding to the top
 
     TextField searchField = new TextField();
     searchField.setPromptText("Search Users");
     searchField.setStyle("-fx-font-size: 15;");
     searchField.setMaxWidth(300);
+    searchField.setMinWidth(300);
+
+    HBox searchBarBox = new HBox(searchField);
+    searchBarBox.setAlignment(Pos.CENTER);
 
     ListView<String> listView = new ListView<>();
     listView.setMaxHeight(100);
-    listView.setPrefWidth(10);
-    listView.setVisible(false); // Initially set to invisible
+    listView.setMinWidth(300);
+    listView.setVisible(false);
+    listView.setStyle("-fx-background-color: transparent; -fx-border-color: #ca7235;");
 
     searchField.textProperty().addListener((observable, oldValue, newValue) -> {
         boolean searchTermEntered = !newValue.trim().isEmpty();
         listView.setVisible(searchTermEntered);
-        handleSearchUsers(searchField, listView);
+        search();
     });
 
-    GridPane gridPane = new GridPane();
-    gridPane.setAlignment(Pos.CENTER);
-    gridPane.setHgap(25);
-    gridPane.setVgap(25);
-    gridPane.add(createStyledButton("Add User", event -> add()), 0, 1);
-    gridPane.add(createStyledButton("Remove User", event -> remove()), 1, 1);
-    gridPane.add(searchField, 0, 0, 2, 1); // Span 2 columns for the search bar
-    gridPane.add(createStyledButton("Add Salary To User", event -> handleAddSalary()), 0, 2);
-    gridPane.add(createStyledButton("Add Bonus to User", event -> handleAddBonus()), 1, 2);
-    gridPane.add(createStyledButton("Display User Reports", event -> handleDisplayUsers()), 0, 3);
-    gridPane.add(createStyledButton("Display Booking Reports", event -> handleDisplayBookings()), 1, 3);
-    gridPane.add(createStyledButton("Edit User", event -> edit()), 0, 4);
+    HBox buttonBox = new HBox(
+            createStyledButton("Add User", event -> add()),
+            createStyledButton("Remove User", event -> remove()),
+            createStyledButton("Add Salary To User", event -> handleAddSalary()),
+            createStyledButton("Add Bonus to User", event -> handleAddBonus()),
+            createStyledButton("Display User Reports", event -> handleDisplayUsers()),
+            createStyledButton("Display Booking Reports", event -> handleDisplayBookings()),
+            createStyledButton("Edit User", event -> {
+                edit();
+                // Add a close button to return to the normal manage users view
+                Button closeButton = createStyledButton("Close", closeEvent -> {
+                    stackPane.getChildren().clear();
+                    stackPane.getChildren().add(manageUsersMenu);
+                    setSceneBackground(manageUsersMenu);
+                });
+                HBox closeBox = new HBox(closeButton);
+                closeBox.setAlignment(Pos.CENTER);
+                closeBox.setPadding(new Insets(10, 0, 0, 0));
+                manageUsersMenu.getChildren().addAll(closeBox);
+            })
+    );
+    buttonBox.setAlignment(Pos.CENTER);
+    buttonBox.setSpacing(10);
 
     manageUsersMenu.getChildren().addAll(
             welcomeLabel,
-            gridPane,
+            searchBarBox,
+            buttonBox,
             listView
     );
 
     return manageUsersMenu;
 }
-
 
 public Button createStyledButton(String text, EventHandler<ActionEvent> action) {
     Button button = new Button(text);
@@ -231,9 +334,10 @@ public Button createStyledButton(String text, EventHandler<ActionEvent> action) 
 
 
 private void handleAddSalary() {
-    VBox addSalaryMenu = new VBox(10);
-    addSalaryMenu.setAlignment(Pos.CENTER);
-    Label welcomeLabel = new Label("Add Salary");
+    HBox addSalaryBox = new HBox(10);
+    addSalaryBox.setAlignment(Pos.CENTER);
+
+    Label welcomeLabel = createStyledLabel("Add Salary");
     welcomeLabel.setStyle("-fx-font-size: 24;");
 
     TextField userIdField = new TextField();
@@ -242,27 +346,31 @@ private void handleAddSalary() {
     TextField salaryField = new TextField();
     salaryField.setPromptText("Salary");
 
-    Button addSalaryBtn = createStyledButton("Add Salary", event -> handleAddSalaryAction(userIdField, salaryField, addSalaryMenu, welcomeLabel));
+    Button addSalaryBtn = createStyledButton("Add Salary", event -> handleAddSalaryAction(userIdField, salaryField, addSalaryBox, welcomeLabel));
 
-    addSalaryMenu.getChildren().addAll(
-            welcomeLabel,
+    addSalaryBox.getChildren().addAll(
             userIdField,
             salaryField,
             addSalaryBtn
     );
 
-    updateStack(addSalaryMenu);
+    VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+    manageUsersMenu.getChildren().add(addSalaryBox);
+
+    updateStack(manageUsersMenu);
 }
 
-private void handleAddSalaryAction(TextField userId, TextField salary, VBox parentBox, Label welcomeLabel) {
+private void handleAddSalaryAction(TextField userId, TextField salary, HBox parentBox, Label welcomeLabel) {
     try {
+        readUsersFromFile(); // Make sure to read users from file before checking existence
         int id = Integer.parseInt(userId.getText());
         double salaryValue = Double.parseDouble(salary.getText());
 
-        if (!userExists(id, "")) {
+        if (userExists(id, "")) {
             showAlert("Error", "User does not exist.", Alert.AlertType.ERROR);
         } else {
             addSalary(id, salaryValue);
+            saveUsersToFile(); // Save the changes to the file
 
             showAlert("Success", "Salary added successfully.", Alert.AlertType.INFORMATION);
             parentBox.getChildren().clear();
@@ -281,112 +389,91 @@ private void handleAddSalaryAction(TextField userId, TextField salary, VBox pare
     }
 
 private void handleAddBonus() {
-    TextInputDialog dialog = new TextInputDialog();
-    dialog.setTitle("Add Bonus");
-    dialog.setHeaderText("Enter User ID");
-    dialog.setContentText("User ID:");
-    Optional<String> result = dialog.showAndWait();
-    if (result.isPresent()) {
-        try {
-            int userId = Integer.parseInt(result.get());
-            if (userExists(userId, "")) {
-                TextInputDialog bonusDialog = new TextInputDialog();
-                bonusDialog.setTitle("Add Bonus");
-                bonusDialog.setHeaderText("Enter Bonus");
-                bonusDialog.setContentText("Bonus:");
+    HBox addBonusBox = new HBox(10);
+    addBonusBox.setAlignment(Pos.CENTER);
 
-                Optional<String> bonusResult = bonusDialog.showAndWait();
-                if (bonusResult.isPresent()) {
-                    try {
-                        int bonus = Integer.parseInt(bonusResult.get());
+    Label welcomeLabel = createStyledLabel("Add Bonus");
+    welcomeLabel.setStyle("-fx-font-size: 24;");
 
-                        addBonus(userId, bonus);
+    TextField userIdField = new TextField();
+    userIdField.setPromptText("User ID");
 
-                        showAlert("Success", "Bonus added successfully.", Alert.AlertType.INFORMATION);
-                    } catch (NumberFormatException e) {
-                        showAlert("Error", "Invalid bonus format. Please enter a valid integer.", Alert.AlertType.ERROR);
-                    }
-                }
-            } else {
-                showAlert("Error", "User does not exist.", Alert.AlertType.ERROR);
-            }
-        } catch (NumberFormatException e) {
-            showAlert("Error", "Invalid User ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+    TextField bonusField = new TextField();
+    bonusField.setPromptText("Bonus");
+
+    Button addBonusBtn = createStyledButton("Add Bonus", event -> handleAddBonusAction(userIdField, bonusField, addBonusBox, welcomeLabel));
+    addBonusBox.getChildren().addAll(
+            userIdField,
+            bonusField,
+            addBonusBtn
+    );
+
+    VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+    manageUsersMenu.getChildren().add(addBonusBox);
+
+    updateStack(manageUsersMenu);
+}
+
+private void handleAddBonusAction(TextField userId, TextField bonus, HBox parentBox, Label welcomeLabel) {
+    try {
+        readUsersFromFile(); 
+        int id = Integer.parseInt(userId.getText());
+        int bonusValue = Integer.parseInt(bonus.getText());
+
+        if (userExists(id, "")) {
+            showAlert("Error", "User does not exist.", Alert.AlertType.ERROR);
+        } else {
+            addBonus(id, bonusValue);
+            saveUsersToFile(); 
+
+            showAlert("Success", "Bonus added successfully.", Alert.AlertType.INFORMATION);
+            parentBox.getChildren().clear();
+            parentBox.getChildren().add(welcomeLabel);
         }
+    } catch (NumberFormatException e) {
+        showAlert("Error", "Invalid input format. Please enter valid values.", Alert.AlertType.ERROR);
     }
 }
 
 
 private void handleDisplayUsers() {
-    StringBuilder report = new StringBuilder();
-    report.append("Receptionist with the maximum no. of Bookings: ")
-            .append(Booking.findReceptionistWithMostBookings())
-            .append("\n");
+    Label receptionistBookingsLabel = createStyledLabel("Receptionist with the maximum no. of Bookings: " +
+            Booking.findReceptionistWithMostBookings());
 
-    report.append("Guest with the maximum no. of Bookings: ")
-            .append(Booking.findGuestWithMostBookings())
-            .append("\n");
+    Label guestBookingsLabel = createStyledLabel("Guest with the maximum no. of Bookings: " +
+            Booking.findGuestWithMostBookings());
 
-    report.append("Receptionist with the maximum revenue: ")
-            .append(Booking.findReceptionistWithMostRevenue())
-            .append("\n");
+    Label receptionistRevenueLabel = createStyledLabel("Receptionist with the maximum revenue: " +
+            Booking.findReceptionistWithMostRevenue());
 
-    report.append("Guest with the maximum revenue: ")
-            .append(Booking.findGuestWithMostRevenue())
-            .append("\n");
+    Label guestRevenueLabel = createStyledLabel("Guest with the maximum revenue: " +
+            Booking.findGuestWithMostRevenue());
 
-    showAlert("User Reports", report.toString(), Alert.AlertType.INFORMATION);
+    // Assuming that the existing VBox in the Manage Users pane is accessible
+    VBox manageUsersPane = (VBox) stackPane.getChildren().get(0);
+    
+    // Add the labels below the existing buttons
+    manageUsersPane.getChildren().addAll(
+            receptionistBookingsLabel,
+            guestBookingsLabel,
+            receptionistRevenueLabel,
+            guestRevenueLabel
+    );
 }
 
 
 
 
-private void handleEditUserAction(TextField userId, TextField userName, VBox parentBox, Label welcomeLabel) {
-    try {
-        int id = Integer.parseInt(userId.getText());
-        String name = userName.getText();
 
-        if (!userExists(id, name)) {
-            showAlert("Error", "User does not exist.", Alert.AlertType.ERROR);
-        } else {
-            TextField newUserId = new TextField();
-            newUserId.setPromptText("New User ID");
-
-            TextField newUserName = new TextField();
-            newUserName.setPromptText("New User Name");
-
-            Button saveChangesBtn = createStyledButton("Save Changes", event -> handleSaveChanges(id, name, newUserId.getText(), newUserName.getText(), parentBox, welcomeLabel));
-
-            parentBox.getChildren().clear(); 
-            parentBox.getChildren().addAll(newUserId, newUserName, saveChangesBtn);
-        }
-    } catch (NumberFormatException e) {
-        showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
-    }
-}
-
-private void handleSaveChanges(int oldUserId, String oldUserName, String newUserIdText, String newUserName, VBox parentBox, Label welcomeLabel) {
-    try {
-        int newUserId = Integer.parseInt(newUserIdText);
-        if (userExists(newUserId, newUserName)) {
-            showAlert("Error", "User with the new ID and name already exists.", Alert.AlertType.ERROR);
-        } else {
-
-            editUser(oldUserId, oldUserName, newUserId, newUserName);
-
-            showAlert("Success", "User updated successfully.", Alert.AlertType.INFORMATION);
-            parentBox.getChildren().clear();
-            parentBox.getChildren().add(welcomeLabel);
-        }
-    } catch (NumberFormatException e) {
-        showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
-    }
-}
-
- private void updateStack(Pane pane) {
+private void updateStack(Pane pane) {
     System.out.println("update stack sha8al"); 
+
+    VBox stackContainer = new VBox();
+    setSceneBackground(stackContainer); // Set the background image
+
+    stackContainer.getChildren().add(pane);
     stackPane.getChildren().clear();
-    stackPane.getChildren().add(pane);
+    stackPane.getChildren().add(stackContainer);
 }
 
 
@@ -444,36 +531,9 @@ public boolean userExists(int id, String name) {
 }
 
 
-public void editUser(int currentId, String currentName, int newId, String newName) {
-    try {
-        readUsersFromFile();
-
-        Optional<Users> userToEdit = users.stream()
-                .filter(u -> u.getID() == currentId && u.getName().equals(currentName))
-                .findFirst();
-
-        if (userToEdit.isPresent()) {
-            if (!userExists(newId, newName)) {
-                Users editedUser = userToEdit.get();
-                editedUser.setID(newId);
-                editedUser.setName(newName);
-
-                System.out.println("User edited successfully!");
-            } else {
-                throw new RuntimeException("New ID or name already exists. Please choose unique values.");
-            }
-        } else {
-            throw new RuntimeException("User not found.");
-        }
-    } catch (RuntimeException e) {
-        System.out.println("Error editing user: " + e.getMessage());
-    }
-}
-
 
    public static int generateGuestId() {
     Random random = new Random();
-    // Generate a 5-digit ID with the first two digits being 22
     int guestId = Integer.parseInt("22" + String.format("%03d", random.nextInt(1000)));
     
     return guestId;
@@ -522,17 +582,6 @@ public void addSalary(int userId, double salary) {
         Users.addBonusToFile(userId, bonus); 
     }
  
-public void displayUserReports(Users currentUser) {
-        System.out.println("User Details:");
-        System.out.println("ID: " + currentUser.getID());
-        System.out.println("Name: " + currentUser.getName());
-        if ("guest".equals(currentUser.getName())) {
-            System.out.println("Password: " + currentUser.getPassword());
-        } else {
-            // Assuming salary is a property in the user class
-            System.out.println("Salary: " +getSalary());
-        }
-    }
 public static void displayAdmins() {
         if (admins.isEmpty()) {
             System.out.println("No admins to display.");
@@ -578,8 +627,6 @@ public static void saveAdminsToFile() {
 }
     public static Scene managesVehicle()
     {
-        Vehicle.listlabelsinitialization();
-        vehicleTable.getChildren().add(Vehicle.listlabels);
         FlowPane vehicleSceneLayout = new FlowPane();
         vehicleSceneLayout.setStyle("-fx-background-color: #292525; -fx-background-image: url('file:/home/jana/Downloads/backtrial.jpg'); -fx-background-size: cover;");
         vehicleSceneLayout.setOrientation(Orientation.VERTICAL);
@@ -588,11 +635,12 @@ public static void saveAdminsToFile() {
         
         //IMAGES & ICONS
         try {
-            Image icon = new Image(new FileInputStream("/home/jana/Downloads/magnifier(2).png"));
-            //IMAGEVIEW FOR THE ICON
-            ImageView imageView = new ImageView(icon);
-            imageView.setFitHeight(30); 
-            imageView.setPreserveRatio(true);  
+            Image icon = new Image(new FileInputStream("C:/Users/Electronica Care/Pictures/504795_pia00135_orig_718331.jpg"));
+// IMAGEVIEW FOR THE ICON
+ImageView imageView = new ImageView(icon);
+imageView.setFitHeight(30);
+imageView.setPreserveRatio(true);
+
             
             //LABELS
             Label manageVehiclesLabel = new Label();
@@ -602,14 +650,9 @@ public static void saveAdminsToFile() {
                         
             //VBOX
             scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; ");             
-            //scrollPane.setFitToHeight(true);
-            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-            //scrollPane.lookup(".scroll-bar:vertical").setStyle("-fx-background-color: transparent;");
-            //scrollPane.lookup(".scroll-bar:vertical .thumb").setStyle("-fx-background-color: #ffb000;");
-            scrollPane.setMaxHeight(550);
+            scrollPane.setFitToHeight(true);
             vehicleTable.setSpacing(10);
             vehicleTable.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
-            //vehicleTable.setMaxHeight(200);
             Vehicle.readFromFile();
 
             
@@ -621,12 +664,6 @@ public static void saveAdminsToFile() {
             searchBar.setStyle("-fx-background-color: rgba(0, 0, 0, 0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-border-width: 3px");
             searchBar.setFont(Font.font("Helvetica World", FontWeight.BOLD, 15));
             HBox.setHgrow(searchBar, Priority.ALWAYS);
-            
-            searchBar.setOnKeyTyped(eh -> 
-            {
-                Vehicle v = new Vehicle();
-                v.search();
-            });
             
             //ADD BUTTON
             Button addVehicle = new Button("Add Vehicle");
@@ -646,13 +683,14 @@ public static void saveAdminsToFile() {
             
             //COMBO BOX
             ObservableList o;
-            o = FXCollections.observableArrayList("General","License Plate", "Category", "Number of Seats", "Price per Seat", "Driver's Name");
+            o = FXCollections.observableArrayList("License Plate", "Category", "Number of Seats", "Price per Seat", "Driver's Name");
             ComboBox searchBy = new ComboBox(o);
             searchBy.setStyle("-fx-background-color: #ffb000; -fx-border-color: #ffb000;");
             searchBy.setMaxWidth(200);
             searchBy.setValue("Search by...");
             HBox.setHgrow(searchBy, Priority.ALWAYS);
             
+            HBox horizontalLayoutBox = new HBox();
             HBox.setHgrow(horizontalLayoutBox, Priority.ALWAYS);
             
             horizontalLayoutBox.getChildren().addAll(addVehicle, searchBar, searchVehicle, searchBy);
@@ -660,24 +698,31 @@ public static void saveAdminsToFile() {
             horizontalLayoutBox.setMaxHeight(100);
             horizontalLayoutBox.setAlignment(Pos.BASELINE_LEFT);
            
+            //ANIMATION (TRANSLATION??) OF ADD BUTTON SLIDING PANEL
+
+
+                        
             //ADDING ELEMENTS TO LAYOUT
-            vehicleSceneLayout.getChildren().addAll(manageVehiclesLabel, horizontalLayoutBox, Vehicle.addlayout,Vehicle.listlabels ,scrollPane);
+            vehicleSceneLayout.getChildren().addAll(manageVehiclesLabel, horizontalLayoutBox, Vehicle.addlayout, scrollPane);
             
             //SET ALIGNMENT
             vehicleSceneLayout.setVgap(10);
             vehicleSceneLayout.setPadding(new javafx.geometry.Insets(40, 40, 40, 40));
             
+            
+        
             //EVENT-HANDLING
             addVehicle.setOnAction(e ->
             {
                 Vehicle.addlayoutInitialization();
-            });  
+            });
+            
+            
 
         } catch (FileNotFoundException e) {
             System.out.println(e);
         }
-        
-        Scene vehicleScene = new Scene(vehicleSceneLayout, 1500, 800);
+        Scene vehicleScene = new Scene(vehicleSceneLayout, 800, 800);
         return vehicleScene;
     }
     
@@ -734,19 +779,26 @@ public static void saveAdminsToFile() {
             }
         }    
     }
-
-  @Override
+@Override
 public void add() {
+    VBox addPane = new VBox();
+    
+    setSceneBackground(addPane);
+
     Label welcomeLabel = new Label();
 
     TextField idField = new TextField();
     idField.setPromptText("User ID");
+    idField.setStyle("-fx-font-size: 12; -fx-background-color: transparent; -fx-border-color: #ca7235;");
     TextField nameField = new TextField();
     nameField.setPromptText("User Name");
+    nameField.setStyle("-fx-font-size: 12; -fx-background-color: transparent; -fx-border-color: #ca7235;");
     PasswordField passwordField = new PasswordField();
     passwordField.setPromptText("User Password");
+    passwordField.setStyle("-fx-font-size: 12; -fx-background-color: transparent; -fx-border-color: #ca7235;");
 
     Button addUserBtn = new Button("Add User");
+    addUserBtn.setStyle("-fx-font-size: 12; -fx-background-color: #ca7235; -fx-text-fill: white;");
     addUserBtn.setOnAction((ActionEvent event) -> {
         String idText = idField.getText();
         String name = nameField.getText();
@@ -771,7 +823,10 @@ public void add() {
                             saveUsersToFile();
 
                             System.out.println("User added successfully!");
-                            updateStack(createManageUsersPane(welcomeLabel));
+                            idField.clear();
+                            nameField.clear();
+                            passwordField.clear();
+                            updateListView();
                         }
                     } catch (RuntimeException e) {
                         showAlert("Error", "Error adding user: " + e.getMessage(), Alert.AlertType.ERROR);
@@ -781,23 +836,49 @@ public void add() {
                 showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
             }
         }
+        
+        setSceneBackground(addPane);
     });
 
     Button goBackBtn = createStyledButton("Go Back", event -> {
-        // Go back to Manage Users page
         stackPane.getChildren().clear();
         stackPane.getChildren().add(welcomeLabel);
         updateStack(createManageUsersPane(welcomeLabel));
     });
+    goBackBtn.setStyle("-fx-font-size: 12; -fx-background-color: #ca7235; -fx-text-fill: white;");
+    goBackBtn.setAlignment(Pos.TOP_LEFT);
 
-    VBox vbox = new VBox(20);
+    ListView<String> usersListView = new ListView<>();
+    usersListView.setMaxHeight(30); 
+    usersListView.setMinWidth(300);
+    usersListView.setVisible(true);
+    usersListView.setStyle("-fx-background-color: transparent; -fx-border-color: #ca7235;");
+
+    VBox vbox = new VBox(10); // Adjusted spacing
     vbox.setAlignment(Pos.CENTER);
 
-    vbox.getChildren().addAll(idField, nameField, passwordField, addUserBtn, goBackBtn);
+    vbox.getChildren().addAll(goBackBtn, idField, nameField, passwordField, addUserBtn, usersListView);
 
     stackPane.getChildren().clear();
     stackPane.getChildren().add(vbox);
+
+    updateListView();
 }
+
+
+private void updateListView() {
+    ListView<String> usersListView = new ListView<>();
+    for (Users user : users) {
+        usersListView.getItems().add("ID: " + user.getID() + " | Name: " + user.getName());
+    }
+
+    VBox currentVBox = (VBox) stackPane.getChildren().get(0);
+
+    currentVBox.getChildren().removeIf(node -> node instanceof ListView);
+
+    currentVBox.getChildren().add(usersListView);
+}
+
 
     @Override
 public void remove() {
@@ -807,7 +888,6 @@ public void remove() {
     idField.setPromptText("User ID");
     TextField nameField = new TextField();
     nameField.setPromptText("User Name");
-
     Button removeUserBtn = new Button("Remove User");
     removeUserBtn.setOnAction((ActionEvent event) -> {
         String idText = idField.getText();
@@ -824,7 +904,7 @@ public void remove() {
                 boolean found = findUser(id, name);
 
                 if (found) {
-                    // Remove the user
+                   
                     users.removeIf(currentUser -> currentUser.getID() == id && currentUser.getName().equals(name));
                     System.out.println("User removed successfully!");
                     updateStack(createManageUsersPane(welcomeLabel));
@@ -840,25 +920,28 @@ public void remove() {
     });
 
     Button goBackBtn = createStyledButton("Go Back", event -> {
-        // Go back to Manage Users page
         stackPane.getChildren().clear();
         stackPane.getChildren().add(welcomeLabel);
         updateStack(createManageUsersPane(welcomeLabel));
     });
 
-    VBox vbox = new VBox(10); // 10 is the spacing between components
-    vbox.getChildren().addAll(idField, nameField, removeUserBtn, goBackBtn);
-    vbox.setAlignment(Pos.CENTER);
-    stackPane.getChildren().clear();
-    stackPane.getChildren().add(vbox);
+    HBox removeUserBox = new HBox(10); 
+    removeUserBox.getChildren().addAll(idField, nameField, removeUserBtn, goBackBtn);
+    removeUserBox.setAlignment(Pos.CENTER);
+
+   
+    VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+    manageUsersMenu.getChildren().addAll(removeUserBox);
+
+    updateStack(manageUsersMenu);
 }
 
-    @Override
+ @Override
 public void edit() {
-    VBox editUserMenu = new VBox(10);
-    editUserMenu.setAlignment(Pos.CENTER);
-    Label welcomeLabel = new Label("Edit User");
-    welcomeLabel.setStyle("-fx-font-size: 24;");
+    VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+
+    Label editLabel = createStyledLabel("Edit User");
+    editLabel.setStyle("-fx-font-size: 24;");
 
     TextField userIdField = new TextField();
     userIdField.setPromptText("User ID");
@@ -866,24 +949,109 @@ public void edit() {
     TextField userNameField = new TextField();
     userNameField.setPromptText("User Name");
 
-    Button editUserBtn = createStyledButton("Edit User", event -> handleEditUserAction(userIdField, userNameField, editUserMenu, welcomeLabel));
+    VBox editContainer = new VBox(); // Container for edit items
+    Button editUserBtn = createStyledButton("Edit User", event -> {
+        try {
+            int id = Integer.parseInt(userIdField.getText());
+            String name = userNameField.getText();
 
-    editUserMenu.getChildren().addAll(
-            welcomeLabel,
+            if (!userExists(id, name)) {
+                showAlert("Error", "User does not exist.", Alert.AlertType.ERROR);
+            } else {
+                TextField newUserId = new TextField();
+                newUserId.setPromptText("New User ID");
+
+                TextField newUserName = new TextField();
+                newUserName.setPromptText("New User Name");
+
+                Button saveChangesBtn = createStyledButton("Save Changes", saveEvent -> {
+                    try {
+                        int newUserIdValue = Integer.parseInt(newUserId.getText());
+                        if (userExists(newUserIdValue, newUserName.getText())) {
+                            showAlert("Error", "User with the new ID and name already exists.", Alert.AlertType.ERROR);
+                        } else {
+                            try {
+                                readUsersFromFile();
+
+                                Optional<Users> userToEdit = users.stream()
+                                        .filter(u -> u.getID() == id && u.getName().equals(name))
+                                        .findFirst();
+
+                                if (userToEdit.isPresent()) {
+                                    if (!userExists(newUserIdValue, newUserName.getText())) {
+                                        Users editedUser = userToEdit.get();
+                                        editedUser.setID(newUserIdValue);
+                                        editedUser.setName(newUserName.getText());
+
+                                        saveUsersToFile(); // Save the modified users list to file
+                                        showAlert("Success", "User updated successfully.", Alert.AlertType.INFORMATION);
+                                        editContainer.getChildren().clear();
+                                        editContainer.getChildren().add(editLabel);
+                                    } else {
+                                        throw new RuntimeException("New ID or name already exists. Please choose unique values.");
+                                    }
+                                } else {
+                                    throw new RuntimeException("User not found.");
+                                }
+                            } catch (RuntimeException e) {
+                                System.out.println("Error editing user: " + e.getMessage());
+                            }
+                        }
+                    } catch (NumberFormatException e) {
+                        showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+                    }
+                });
+
+                GridPane gridPane = new GridPane();
+                gridPane.setHgap(10); // Set horizontal gap between elements
+                gridPane.setVgap(10); // Set vertical gap between elements
+
+                // Add elements to the grid
+                gridPane.add(new Label("New User ID:"), 0, 0);
+                gridPane.add(newUserId, 1, 0);
+                gridPane.add(new Label("New User Name:"), 0, 1);
+                gridPane.add(newUserName, 1, 1);
+                gridPane.add(saveChangesBtn, 0, 2, 2, 1); // Span the button across two columns
+
+                // Clear the editContainer and add the gridPane
+                editContainer.getChildren().clear();
+                editContainer.getChildren().add(gridPane);
+            }
+        } catch (NumberFormatException e) {
+            showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+        }
+    });
+
+    Button closeButton = createStyledButton("Close", closeEvent -> {
+        ManageUsers();
+    });
+
+    HBox editUserBox = new HBox(
             userIdField,
             userNameField,
             editUserBtn
     );
 
-    updateStack(editUserMenu);
+    VBox combinedEditBox = new VBox(); // Container for combined edit and editUserAction items
+    combinedEditBox.getChildren().addAll(
+            editUserBox,
+            editContainer // This container will hold items added by handleEditUserAction
+    );
+
+    manageUsersMenu.getChildren().addAll(
+            editLabel,
+            combinedEditBox,
+            closeButton
+    );
+
+    updateStack(manageUsersMenu);
 }
 
-    @Override
-    public void search() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+@Override
+public void search() {
+    TextField searchField = new TextField(); 
+    ListView<String> listView = new ListView<>();
 
-    private void handleSearchUsers(TextField searchField, ListView<String> listView) {
     String searchTerm = searchField.getText().trim().toLowerCase();
 
     if (searchTerm.isEmpty()) {
@@ -902,5 +1070,9 @@ public void edit() {
 
         listView.getItems().setAll(userStrings);
     }
+
+    listView.setVisible(true);
 }
+
+
 }
