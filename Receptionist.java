@@ -2,26 +2,73 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package project.trial;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+package javaapplication13;
 
 /**
  *
  * @author Nouran
  */
+import java.io.FileNotFoundException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+ 
+/**
+ *
+ * @author Nouran
+ */
 public class Receptionist extends Users {
+transient Scene scene3;
+transient  Scene scene4;
+
+Booking f= new Booking();
+
+Scene scene1;
+Scene scene5;
+//scene= f.createPrimaryStage( primaryStage);
+
+     //scene6=f.chooseTrip( primaryStage);
+
+       //scene2= f.createBookingSuccessful(primaryStage);
+
+private transient Image backgroundImage = new Image("file:///D:/year 2/OOP/picturee.jpg");
+  double  windowWidth = 600;
+    double windowHeight = 400;
+    // Create the background for stages
+private transient BackgroundSize backgroundSize = new BackgroundSize(windowWidth, windowHeight, true, true, true, true);
+    private transient BackgroundImage background = new BackgroundImage(
+            backgroundImage,
+            BackgroundRepeat.NO_REPEAT,
+            BackgroundRepeat.NO_REPEAT,
+            BackgroundPosition.DEFAULT,
+            backgroundSize
+    );
+
+
 
     public Receptionist() {
     }
-    
-    public Receptionist(int id, String password, String name) {
+     public Receptionist(int id, String password, String name) {
         super(id, password, name);
     }
 
+   
     public static List<Receptionist> receptionists = new ArrayList<>();
 
     public static void storeReceptionistInfo(Receptionist newReceptionist) {
@@ -35,57 +82,63 @@ public class Receptionist extends Users {
         }
     }
     
-    public static void managesBooking()
-    {
-      Scanner in = new Scanner(System.in);
-      Booking b = new Booking();
-      while (true) {
-      System.out.println("Welcome to the Booking Management System!");
-      System.out.println("Choose an option:");
-      System.out.println("1.Add booking");
-      System.out.println("2.Remove booking");
-      System.out.println("3.Edit booking");
-      System.out.println("4.Calculate Average revenue, Total revenue, number of bookings over a specific period of time ");
-      System.out.println("5.Calculate payment");
-      System.out.println("6.View Reports in terminal");
-      System.out.println("7.View Reports in file");
-      System.out.println("8. Exit");
+    
+    
+    public Scene ManageBookings( Stage primaryStage) throws FileNotFoundException {
+       Scene scene=f.createPrimaryStage( primaryStage);
+       
+        Booking.select_trip_details();
 
-       int choose = in.nextInt();
-      switch(choose){
-          case 1:
-              b.select_trip_details();
-              b.add();
-              break;
-          case 2:
-              b.remove();
-              break;
-          case 3:
-              //b.edit();
-              break;
-          case 4:
-              b.calculateAverageTotalRevenue(LocalDateTime.MAX, LocalDateTime.MIN);
-              break;
-          case 5:
-              //b.calculate_payment();
-              break;
-          case 6:
-              b.viewReports();
-              break;
-          case 7:
-            String file= "View Bookings";
-              //b.viewFile( file);
-              
-              break;
-              case 8:
-                    System.out.println("Thank you for using our Booking Management System. See you soon!");
-                    System.exit(0);
-                    break;
-                default:
-                    System.out.println("Invalid option. Please choose again.");
-            }
-              
-      }
+        GridPane trials = new GridPane();
+        primaryStage.setTitle("Manage Bookings");
+
+        scene3 = new Scene(trials, windowWidth, windowHeight);
+        primaryStage.setScene(scene3);
+        trials.setBackground(new Background(background));
+
+        Label lbl19 = new Label("Welcome To Manage Bookings");
+        Label lbl20 = new Label("What Would you like to do? ");
+        Label lbl21 = new Label("New Booking :");
+        Label lbl22 = new Label("Existing Booking");
+        Button btn4 = new Button("ADD");
+        Button btn5 = new Button("Manage");
+
+        trials.add(lbl19, 0, 0, 2, 1);
+        GridPane.setValignment(lbl19, VPos.TOP); // Align to the top
+        GridPane.setMargin(lbl19, new Insets(10, 10, 0, 10)); // Add margin
+        lbl19.setTextFill(Color.WHITE);
+        lbl20.setTextFill(Color.WHITE);
+        lbl21.setTextFill(Color.WHITE);
+        lbl22.setTextFill(Color.WHITE);
+        trials.setAlignment(Pos.CENTER);
+        trials.add(lbl20, 0, 1, 2, 1); // lbl20 spans 2 columns
+        trials.add(lbl21, 0, 2);
+        trials.add(btn4, 1, 2);
+        trials.add(lbl22, 0, 3);
+        trials.add(btn5, 1, 3);
+        GridPane.setMargin(lbl19, new Insets(0, 10, 0, 0));
+        GridPane.setMargin(lbl20, new Insets(0, 10, 0, 0));
+        trials.setHgap(10);
+        trials.setVgap(10);
+
+        btn4.setOnAction(e -> {
+           primaryStage.setScene(scene);
+        });
+        btn5.setOnAction(e -> {
+           primaryStage.setScene(f.ExistingBookings(primaryStage));
+        });
+
+        return scene3;
     }
+    
 }
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
