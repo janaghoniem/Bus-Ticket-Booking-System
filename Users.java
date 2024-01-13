@@ -38,6 +38,7 @@ public  class Users implements Serializable{
     protected int ID;
     protected String Password;
     protected String Name;
+    protected Type position;
     private double Salary;
     private int Bonus;
     private static Users currentUser;
@@ -54,6 +55,15 @@ public  class Users implements Serializable{
         usersMap.put(ID,Password);
     }
     
+    public Users(int ID, String Password, String Name, Type position) 
+    {
+        this.ID = ID;
+        this.Password = Password;
+        this.Name = Name;
+        this.position = position;
+        usersMap.put(ID,Password);
+    }
+    
     
     public Users(int ID, String Password) 
     {
@@ -67,7 +77,7 @@ public  class Users implements Serializable{
     //Read from Binary File solution 
     static void readFromFile() throws FileNotFoundException
     {
-        FileInputStream file = new FileInputStream("user_data.dat");
+        FileInputStream file = new FileInputStream("user_information.dat");
       
         try(ObjectInputStream ois = new ObjectInputStream(file))
         {
@@ -90,7 +100,7 @@ public  class Users implements Serializable{
     //Write to Binary File solution 
     private static void writeToFile() throws FileNotFoundException
     {
-        FileOutputStream file = new FileOutputStream("user_data.dat");
+        FileOutputStream file = new FileOutputStream("user_information.dat");
         try(ObjectOutputStream oos = new ObjectOutputStream(file))
         {
             oos.writeObject(new Users());
@@ -148,94 +158,6 @@ public  class Users implements Serializable{
             return -1;
         }
     }
-    
-    public int Login() throws FileNotFoundException
-    {
-        Scanner scanner = new Scanner(System.in);
-        int count = 0;
-        boolean restart = true;
-        System.out.println("Welcome User. Are you an (1) Admin, (2) Receptionist, or (3) Guest: ");
-        int option = scanner.nextInt();
-        scanner.nextLine();
-        switch(option){
-            case 1: 
-            {
-                while(restart)
-                {
-                    System.out.print("Enter ID: ");
-                    int id = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.print("Enter password: ");
-                    String password = scanner.nextLine();
-
-                    while(count < 3)
-                    {
-                        if (isValidAdmin(id, password)) 
-                        {
-                            System.out.println("Login successful!");
-                            restart = false;
-                            return 1;
-                        } 
-                        else 
-                        {
-                            System.out.println("Invalid ID or password.");
-                            count++;
-                        }
-                        if(count == 3){ exit(); }
-                        break;
-                    }
-                }
-            }
-            case 2: {
-                while(restart){
-                    System.out.print("Enter ID: ");
-                    int id = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.print("Enter password: ");
-                    String password = scanner.nextLine();
-
-
-                    while(count < 3){
-                        if (isValidRec(id, password)) {
-                            System.out.println("Login successful!");
-                            restart = false;
-                            return 2;
-                        } else {
-                            System.out.println("Invalid ID or password.");
-                            count++;
-                        }
-                        if(count == 3){ exit(); }
-                    }
-                    break;
-                }
-            }
-            case 3: {
-                while(restart){
-                    System.out.print("Enter ID: ");
-                    int id = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.print("Enter password: ");
-                    String password = scanner.nextLine();
-
-
-                    while(count < 3){
-                        if (isValidGuest(id, password)) {
-                            System.out.println("Login successful!");
-                            restart = false;
-                            return 3;
-                        } else {
-                            System.out.println("Invalid ID or password.");
-                            count++;
-                        }
-                        if(count == 3){ exit(); }
-                        break;
-                    }     
-                }
-            }
-        }
-        return -1;
-    }
-    
 
     
     //Setters and Getters 
