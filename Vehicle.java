@@ -66,7 +66,7 @@ public class Vehicle implements manages<Vehicle>, Serializable {
     }
     
     private static HashMap<String, Vehicle> VehicleList = new HashMap<>(50);
-    private static HashMap<Integer, Integer> AvailibilityMap = new HashMap<>(50);
+    public static HashMap<Integer, Integer> AvailibilityMap = new HashMap<>(50);
         
     //NEEDED FOR MANAGE VEHICLES
     public static GridPane addlayout = new GridPane();
@@ -216,12 +216,14 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         Spinner<Integer> seatsspinner = new Spinner<>();
         SpinnerValueFactory<Integer> seatsvalueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 100, 40);
         seatsspinner.setValueFactory(seatsvalueFactory);
+        seatsspinner.setEditable(true);
             
         Label TicketPrice = new Label("Ticket Price:");
         TicketPrice.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
         Spinner<Integer> pricespinner = new Spinner<>();
         SpinnerValueFactory<Integer> pricevalueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(5, 100, 20);
-        pricespinner.setValueFactory(pricevalueFactory);        
+        pricespinner.setValueFactory(pricevalueFactory);   
+        pricespinner.setEditable(true);
             
         Label DriverName = new Label("Driver's Name:");
         DriverName.setStyle("-fx-background-color: rgba(0,0,0,0); -fx-text-fill: #ffb000; -fx-font-family: 'Helvetica World';");
@@ -273,7 +275,7 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         resetStyle(DriverNameString);
         resetStyle(LicensePlateString);
 
-        if (isValidLicensePlate(LicensePlateString.getText()) && !DriverNameString.getText().isEmpty()) {
+        if (isValidLicensePlate(LicensePlateString.getText()) && isValidName(DriverNameString.getText())) {
             String licensenumber = LicensePlateString.getText().substring(0, 3);
             String licenseletters =  LicensePlateString.getText().substring(3).toUpperCase();
             StringBuilder validLicensePlate = new StringBuilder();
@@ -290,22 +292,27 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             newVehicle.add();
         } else {
 
-            if (DriverNameString.getText().isEmpty()) {
-                showErrorLabel("*Driver's Name Field cannot be empty.", row, DriverNameString);
-                row++;
+            if (!isValidName(DriverNameString.getText())) {
+                if (DriverNameString.getText().isEmpty()) {
+                    showErrorLabel("*Driver's Name Field cannot be empty.", row, LicensePlateString);
+                    row++;
+                } else {
+                    showErrorLabel("*Invalid Driver's Name.", row, DriverNameString);
+                    row++;
+                    showErrorLabel("Name must contain letters only.", row, DriverNameString);
+                    row++;
+                }
             } else {
-                resetStyle(DriverNameString);
+                resetStyle(LicensePlateString);
             }
 
             if (!isValidLicensePlate(LicensePlateString.getText())) {
-                showErrorLabel("*Invalid License Plate.", row, LicensePlateString);
-                row++;
-
                 if (LicensePlateString.getText().isEmpty()) {
                     showErrorLabel("*License Plate Field cannot be empty.", row, LicensePlateString);
-                    row++;
                 } else {
-                    showErrorLabel("*Valid license plate: 4 numbers, 3 letters.", row, LicensePlateString);
+                    showErrorLabel("*Invalid License Plate.", row, LicensePlateString);
+                    row++;
+                    showErrorLabel("Valid license plate: 4 numbers, 3 letters.", row, LicensePlateString);
                 }
             } else {
                 resetStyle(LicensePlateString);
@@ -326,6 +333,8 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             removeAllErrorLabels();
             resetStyle(DriverNameString);
             resetStyle(LicensePlateString);
+            //invoke clearbutton eventhandler
+            clearButton.fire();
 
             PauseTransition pause = new PauseTransition(Duration.seconds(0.014));
             pause.setOnFinished(event -> slideUp());
@@ -366,10 +375,12 @@ public class Vehicle implements manages<Vehicle>, Serializable {
     
     public static void removeAllErrorLabels()
     {
+        removeErrorLabel("*Invalid Driver's Name.");
+        removeErrorLabel("Name must contain letters only.");
         removeErrorLabel("*Driver's Name Field cannot be empty.");
         removeErrorLabel("*License Plate Field cannot be empty.");
         removeErrorLabel("*Invalid License Plate.");
-        removeErrorLabel("*Valid license plate: 4 numbers, 3 letters.");
+        removeErrorLabel("Valid license plate: 4 numbers, 3 letters.");
     }
     
     public static void slideDown() {
@@ -649,7 +660,7 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             {
                 for(String s: VehicleList.keySet())
                 {
-                    if(s.toLowerCase().startsWith(searchText))
+                    if(s.toLowerCase().contains(searchText))
                     {
                         Vehicle v = VehicleList.get(s);
                         v.rowDisplay();
@@ -661,7 +672,7 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             {
                 for(Vehicle v: VehicleList.values())
                 {
-                    if(String.valueOf(v.Category).toLowerCase().startsWith(searchText))
+                    if(String.valueOf(v.Category).toLowerCase().contains(searchText))
                     {
                         v.rowDisplay();
                     }
@@ -672,7 +683,7 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             {
                 for(Vehicle v: VehicleList.values())
                 {
-                    if(String.valueOf(v.Number_of_seats).toLowerCase().startsWith(searchText))
+                    if(String.valueOf(v.Number_of_seats).toLowerCase().contains(searchText))
                     {
                         v.rowDisplay();
                     }
@@ -683,7 +694,7 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             {
                 for(Vehicle v: VehicleList.values())
                 {
-                    if(String.valueOf(v.ticket_price).toLowerCase().startsWith(searchText))
+                    if(String.valueOf(v.ticket_price).toLowerCase().contains(searchText))
                     {
                         v.rowDisplay();
                     }
@@ -694,7 +705,18 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             {
                 for(Vehicle v: VehicleList.values())
                 {
-                    if(v.BusDriver_name.toLowerCase().startsWith(searchText))
+                    if(v.BusDriver_name.toLowerCase().contains(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                }
+                break;
+            }
+            case "Date Purchased":
+            {
+                for(Vehicle v: VehicleList.values())
+                {
+                    if(v.datePurchased.toString().contains(searchText))
                     {
                         v.rowDisplay();
                     }
@@ -705,23 +727,27 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             {
                 for(Vehicle v: VehicleList.values())
                 {
-                    if(v.License_plate.toLowerCase().startsWith(searchText))
+                    if(v.License_plate.toLowerCase().contains(searchText))
                     {
                         v.rowDisplay();
                     }
-                    else if(String.valueOf(v.Category).toLowerCase().startsWith(searchText))
+                    else if(String.valueOf(v.Category).toLowerCase().contains(searchText))
                     {
                         v.rowDisplay();
                     }
-                    else if(String.valueOf(v.Number_of_seats).toLowerCase().startsWith(searchText))
+                    else if(String.valueOf(v.Number_of_seats).toLowerCase().contains(searchText))
                     {
                         v.rowDisplay();
                     }
-                    else if(String.valueOf(v.ticket_price).toLowerCase().startsWith(searchText))
+                    else if(String.valueOf(v.ticket_price).toLowerCase().contains(searchText))
                     {
                         v.rowDisplay();
                     }
-                    else if(v.BusDriver_name.toLowerCase().startsWith(searchText))
+                    else if(v.BusDriver_name.toLowerCase().contains(searchText))
+                    {
+                        v.rowDisplay();
+                    }
+                    else if(v.datePurchased.toString().contains(searchText))
                     {
                         v.rowDisplay();
                     }
@@ -817,8 +843,11 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             
             //DELETE BUTTON EVENT-HANDLING
             deleteButton.setOnAction(e -> {
-                Admin.vehicleTable.getChildren().remove(tempHBox);
-                this.remove();
+                if(confirmDeletion())
+                {
+                    this.remove();
+                    Admin.vehicleTable.getChildren().remove(tempHBox);
+                }
             });
             
             //VIEW REPORT BUTTON EVENT-HANDLING
@@ -843,6 +872,16 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         } catch (FileNotFoundException ex) {
             System.out.println(ex);
         }
+    }
+    
+    private boolean confirmDeletion()
+    {
+        Alert delete = new Alert(AlertType.CONFIRMATION);
+        delete.setHeaderText(null);
+        delete.setContentText("Are you sure you want to delete this Vehicle's Information? This action cannot be undone.");
+        delete.setTitle("Deletion Confirmation");
+        Optional<ButtonType> response = delete.showAndWait();
+        return response.isPresent() && response.get().equals(ButtonType.OK);
     }
     
     public static void initializeAvailibilityMap()
@@ -992,7 +1031,7 @@ public class Vehicle implements manages<Vehicle>, Serializable {
     }
       
       
-    public void viewReports() //UNFINISHED
+    public void viewReports()
     {
         Stage dialogStage = new Stage();
         dialogStage.initModality(Modality.WINDOW_MODAL);
@@ -1042,24 +1081,74 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         if (start.getValue() != null && end.getValue() != null) {
             nooftrips.setText(numberofTrips(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
             noofbookings.setText(numberofBookings(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
-            mostbooked.setText(mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
-            mostrevenue.setText(mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+            Vehicle v = mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay());
+            Vehicle x = mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay());
+            if(v.License_plate == null)
+            {
+                mostbooked.setText("No Such Vehicle exists");
+            }
+            else
+            {
+                mostbooked.setText(mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+            }
+            if(x.License_plate == null)
+            {
+                mostrevenue.setText("No Such Vehicle Exists");
+            }
+            else
+            {
+                mostrevenue.setText(mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+            }
         }
         
-        start.setOnInputMethodTextChanged(eh ->
-        {
-            nooftrips.setText(numberofTrips(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
-            noofbookings.setText(numberofBookings(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
-            mostbooked.setText(mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
-            mostrevenue.setText(mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+        start.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && end.getValue() != null) {
+                nooftrips.setText(numberofTrips(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
+                noofbookings.setText(numberofBookings(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
+                Vehicle v = mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay());
+                Vehicle x = mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay());
+                if(v.License_plate == null)
+                {
+                    mostbooked.setText("No Such Vehicle exists");
+                }
+                else
+                {
+                    mostbooked.setText(mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+                }
+                if(x.License_plate == null)
+                {
+                    mostrevenue.setText("No Such Vehicle Exists");
+                }
+                else
+                {
+                    mostrevenue.setText(mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+                }
+            }
         });
-            
-        end.setOnInputMethodTextChanged(eh ->
-        {
-            nooftrips.setText(numberofTrips(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
-            noofbookings.setText(numberofBookings(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
-            mostbooked.setText(mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
-            mostrevenue.setText(mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+
+        end.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (start.getValue() != null && newValue != null) {
+                nooftrips.setText(numberofTrips(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
+                noofbookings.setText(numberofBookings(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()));
+                Vehicle v = mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay());
+                Vehicle x = mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay());
+                if(v.License_plate == null)
+                {
+                    mostbooked.setText("No Such Vehicle exists");
+                }
+                else
+                {
+                    mostbooked.setText(mostBooked(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+                }
+                if(x.License_plate == null)
+                {
+                    mostrevenue.setText("No Such Vehicle Exists");
+                }
+                else
+                {
+                    mostrevenue.setText(mostRevenue(start.getValue().atStartOfDay(), end.getValue().atStartOfDay()).toString());
+                }
+            }
         });
         
         GridPane gridpane = new GridPane();
@@ -1133,6 +1222,11 @@ public class Vehicle implements manages<Vehicle>, Serializable {
 
     private static boolean isValidLicensePlate(String licensePlate) {
         return licensePlate.matches("[0-9]{4}[A-Za-z]{3}");
+    }
+    
+    
+    private static boolean isValidName(String name) {
+        return name.matches("[A-Za-z\\s]+");
     }
 }
 
