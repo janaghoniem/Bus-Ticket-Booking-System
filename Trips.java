@@ -1760,5 +1760,21 @@ public class Trips implements manages, Serializable {
     public void search() {
 
     }
+ //methods el display f el admin 
+   public static Trips mostRevenuedTrip() {
+        return Trips.TripsMap.values().stream()
+                .max(Comparator.comparingDouble(Trips::calculateTotalRevenue))
+                .orElse(null);
+    }
+
+    public static Trips mostBookedTrip() {
+        return Trips.TripsMap.values().stream()
+                .max(Comparator.comparingInt(Trips::getCountTrips))
+                .orElse(null);
+    }
+    
+    private double calculateTotalRevenue() {
+        return getCountTrips() * getPrice();
+    }
 
 }
