@@ -1430,5 +1430,135 @@ btn8.setOnAction(eh->{
         TripsMap.put(trip3.getTrip_id(), trip3);
         TripsMap.put(trip4.getTrip_id(), trip4);
     }
+     public static int findReceptionistWithMostBookings() {
+        Map<Integer, Integer> receptionistBookingsCount = new HashMap<>();
+        for (Booking booking : Booking.getBook().values()) {
+            int receptionistId = booking.getReceptionist_id();
+            receptionistBookingsCount.put(receptionistId, receptionistBookingsCount.getOrDefault(receptionistId, 0) + 1);
+        }
+        int maxBookings = 0;
+        int receptionistWithMostBookings = -1;
+
+        for (Map.Entry<Integer, Integer> entry : receptionistBookingsCount.entrySet()) {
+            int receptionistId = entry.getKey();
+            int bookingsCount = entry.getValue();
+
+            if (bookingsCount > maxBookings) {
+                maxBookings = bookingsCount;
+                receptionistWithMostBookings = receptionistId;
+            }
+        }
+
+        return receptionistWithMostBookings;
+    }
+  
+  public static int findReceptionistWithMostRevenue() {
+    HashMap<Integer, Double> receptionistRevenueMap = new HashMap<>();
+
+    for (Booking booking : book.values()) {
+        int receptionistId = booking.getReceptionist_id();
+        double revenue = booking.gettotal_price();
+
+        if (receptionistRevenueMap.containsKey(receptionistId)) {
+            receptionistRevenueMap.put(receptionistId, receptionistRevenueMap.get(receptionistId) + revenue);
+        } else {
+            receptionistRevenueMap.put(receptionistId, revenue);
+        }
+    }
+    int receptionistWithMostRevenue = -1;
+    double maxRevenue = 0;
+
+    for (int receptionistId : receptionistRevenueMap.keySet()) {
+        double revenue = receptionistRevenueMap.get(receptionistId);
+        if (revenue > maxRevenue) {
+            maxRevenue = revenue;
+            receptionistWithMostRevenue = receptionistId;
+        }
+    }
+
+    return receptionistWithMostRevenue;
+}
+public static int findGuestWithMostRevenue() {
+        HashMap<Integer, Double> guestRevenueMap = new HashMap<>();
+
+        for (Booking booking : book.values()) {
+            int guestId = booking.getGuest_id();
+            double revenue = booking.gettotal_price();
+
+            if (guestRevenueMap.containsKey(guestId)) {
+                guestRevenueMap.put(guestId, guestRevenueMap.get(guestId) + revenue);
+            } else {
+                guestRevenueMap.put(guestId, revenue);
+            }
+        }
+
+        int guestWithMostRevenue = -1;
+        double maxRevenue = 0;
+
+        for (int guestId : guestRevenueMap.keySet()) {
+            double revenue = guestRevenueMap.get(guestId);
+            if (revenue > maxRevenue) {
+                maxRevenue = revenue;
+                guestWithMostRevenue = guestId;
+            }
+        }
+
+        return guestWithMostRevenue;
+    }
+
+    public static int findGuestWithMostBookings() {
+        HashMap<Integer, Integer> guestBookingsMap = new HashMap<>();
+
+        for (Booking booking : book.values()) {
+            int guestId = booking.getGuest_id();
+
+            if (guestBookingsMap.containsKey(guestId)) {
+                guestBookingsMap.put(guestId, guestBookingsMap.get(guestId) + 1);
+            } else {
+                guestBookingsMap.put(guestId, 1);
+            }
+        }
+
+        int guestWithMostBookings = -1;
+        int maxBookings = 0;
+
+        for (int guestId : guestBookingsMap.keySet()) {
+            int bookingsCount = guestBookingsMap.get(guestId);
+            if (bookingsCount > maxBookings) {
+                maxBookings = bookingsCount;
+                guestWithMostBookings = guestId;
+            }
+        }
+
+        return guestWithMostBookings;
+    }
+    
+    //average revenue over a specific period of time 
+public static double calculateTotalRevenue(LocalDateTime start_Time, LocalDateTime end_Time) {
+    int booking_count = 0;
+    double total_revenues = 0;
+
+    for (Booking booking : book.values()) {
+        LocalDateTime booking_timing = booking.getBooking_time();
+        if (booking_timing.isAfter(start_Time) && booking_timing.isBefore(end_Time)) {
+            booking_count++;
+            total_revenues += booking.gettotal_price();
+        }
+    }
+
+    return total_revenues;
+}
+public static int getBookingsCountOverTimePeriod(LocalDateTime startTime, LocalDateTime endTime) {
+        int bookingCount = 0;
+
+        for (Booking booking : book.values()) {
+            LocalDateTime bookingTime = booking.getBooking_time();
+            if (bookingTime.isAfter(startTime) && bookingTime.isBefore(endTime)) {
+                bookingCount++;
+            }
+        }
+
+        return bookingCount;
+    }
 
 }
