@@ -13,6 +13,13 @@ import java.util.Map;
 import java.util.HashMap;
 import java.io.Serializable;
 import java.util.Scanner;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.VBox;
 
 /**
  *
@@ -20,67 +27,57 @@ import java.util.Scanner;
  */
 public  class Users implements Serializable{
     
+    enum Type
+    {
+        ADMIN,
+        RECEPTIONIST, 
+        GUEST
+    }
 
-    
+    //Implementations 
     protected int ID;
     protected String Password;
     protected String Name;
+    protected Type position;
+    private double Salary;
+    private int Bonus;
     private static Users currentUser;
     static Map<Integer, String> usersMap = new HashMap<>();
-
-
-
-    public Users(int ID, String Password, String Name) {
+    
+    
+    //CONSTRUCTORS 
+    public Users (){}
+    public Users(int ID, String Password, String Name) 
+    {
         this.ID = ID;
         this.Password = Password;
         this.Name = Name;
+        usersMap.put(ID,Password);
+    }
+    
+    public Users(int ID, String Password, String Name, Type position) 
+    {
+        this.ID = ID;
+        this.Password = Password;
+        this.Name = Name;
+        this.position = position;
+        usersMap.put(ID,Password);
     }
     
     
-    public Users(int ID, String Password) {
+    public Users(int ID, String Password) 
+    {
         this.ID = ID;
         this.Password = Password;
     }
     
     
-    //CONSTRUCTOR 
-    public Users (){}
-
     
-    
-    //Read from File into HashMap
-//    static void readFromFile() throws FileNotFoundException 
-//    {
-//        try
-//        { 
-//            File file = new File("file:C:/Users/sarad/Downloads/user_information.txt");
-//            
-//            if(!file.exists())
-//            {
-//                System.err.println("File not found" + file.getAbsolutePath());
-//            }
-//            
-//            Scanner scanner =  new Scanner(file);
-//
-//            while(scanner.hasNext())
-//            {
-//                int id = scanner.nextInt();
-//                String password = scanner.next();
-//                String name = scanner.next();
-//
-//                usersMap.put(id, password);
-//                
-//                System.out.println("Read users: ID >> " + id + ", Password >> " + password + ", Name >> " + name);
-//            }
-//        } catch(FileNotFoundException e)
-//        {
-//            System.err.println("File not found"+e.getMessage());
-//        }
-//    }
-    //Binary File solution 
+  
+    //Read from Binary File solution 
     static void readFromFile() throws FileNotFoundException
     {
-        FileInputStream file = new FileInputStream("user_data.dat");
+        FileInputStream file = new FileInputStream("user_information.dat");
       
         try(ObjectInputStream ois = new ObjectInputStream(file))
         {
@@ -99,26 +96,11 @@ public  class Users implements Serializable{
         }
     }
     
-    //Write from HashMap into File
-//    private void writeToFile() 
-//    {
-//        try 
-//        {
-//            File file = new File("user_information.txt");
-//            try (FileWriter writer = new FileWriter(file, true)) 
-//            {
-//                writer.write(this.ID + " " + this.Password + " " + this.Name + "\n");
-//            }
-//        } catch (IOException e) 
-//        {
-//            System.out.println("Data already exist");
-//        }
-//    }
-    
-    //Binary File solution 
+   
+    //Write to Binary File solution 
     private static void writeToFile() throws FileNotFoundException
     {
-        FileOutputStream file = new FileOutputStream("user_data.dat");
+        FileOutputStream file = new FileOutputStream("user_information.dat");
         try(ObjectOutputStream oos = new ObjectOutputStream(file))
         {
             oos.writeObject(new Users());
@@ -128,6 +110,8 @@ public  class Users implements Serializable{
         }
     }
     
+    
+    //Validation Functions 
     public boolean isValidAdmin(int input_id, String input_password) throws FileNotFoundException
     {
         Users.readFromFile();
@@ -147,6 +131,8 @@ public  class Users implements Serializable{
         return guest != null && guest.equals(input_password);
     }
     
+    
+    //Login Function 
     public int Login2(int ID, String Password) throws FileNotFoundException
     {
         Password = Password.trim();
@@ -172,103 +158,6 @@ public  class Users implements Serializable{
             return -1;
         }
     }
-    
-    public int Login() throws FileNotFoundException
-    {
-        Scanner scanner = new Scanner(System.in);
-        int count = 0;
-        boolean restart = true;
-        System.out.println("Welcome User. Are you an (1) Admin, (2) Receptionist, or (3) Guest: ");
-        int option = scanner.nextInt();
-        scanner.nextLine();
-        switch(option){
-            case 1: 
-            {
-                while(restart)
-                {
-                    System.out.print("Enter ID: ");
-                    int id = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.print("Enter password: ");
-                    String password = scanner.nextLine();
-
-                    while(count < 3)
-                    {
-                        if (isValidAdmin(id, password)) 
-                        {
-                            System.out.println("Login successful!");
-                            restart = false;
-                            return 1;
-                        } 
-                        else 
-                        {
-                            System.out.println("Invalid ID or password.");
-                            count++;
-                        }
-                        if(count == 3){ exit(); }
-                        break;
-                    }
-                }
-            }
-            case 2: {
-                while(restart){
-                    System.out.print("Enter ID: ");
-                    int id = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.print("Enter password: ");
-                    String password = scanner.nextLine();
-
-
-                    while(count < 3){
-                        if (isValidRec(id, password)) {
-                            System.out.println("Login successful!");
-                            restart = false;
-                            return 2;
-                        } else {
-                            System.out.println("Invalid ID or password.");
-                            count++;
-                        }
-                        if(count == 3){ exit(); }
-                    }
-                    break;
-                }
-            }
-            case 3: {
-                while(restart){
-                    System.out.print("Enter ID: ");
-                    int id = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.print("Enter password: ");
-                    String password = scanner.nextLine();
-
-
-                    while(count < 3){
-                        if (isValidGuest(id, password)) {
-                            System.out.println("Login successful!");
-                            restart = false;
-                            return 3;
-                        } else {
-                            System.out.println("Invalid ID or password.");
-                            count++;
-                        }
-                        if(count == 3){ exit(); }
-                        break;
-                    }     
-                }
-            }
-        }
-        return -1;
-    }
-    
-    
-    
-    //Sign up function 
-//    public void Signup(int input_id, String input_password){
-//        this.ID = input_id;
-//        this.Password = input_password;
-//        
-//        writeToFile();
-//    }
 
     
     //Setters and Getters 
@@ -313,12 +202,69 @@ public  class Users implements Serializable{
         Users.usersMap = (HashMap<Integer, String>) usersMap;
     }
     
+    public void setSalary(double salary) {
+        this.Salary = salary;
+    }
+    
+    public double getSalary()
+    {
+        return Salary;
+    }
+    
+    public void setBonus(int bonus) {
+        this.Bonus = bonus;
+    }
+    
+    public int getBonus() {
+        return Bonus;
+    }
     
 
     //methods 
-     private void exit() {
-         System.out.println("Thank you for using our bus ticket booking system.");
-         System.exit(0);
-     }
+    private void exit() 
+    {
+        System.out.println("Thank you for using our bus ticket booking system.");
+        System.exit(0);
+    }
+    
+    public static void addSalaryToFile(int userId, double salary) {
+        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("user_information.dat", true))) {
+            dos.writeInt(userId);
+            dos.writeDouble(salary);
+            System.out.println("Salary added successfully!");
+        } catch (IOException e) {
+            System.out.println("Error adding salary to file: " + e.getMessage());
+        }
+    }
+ 
+    public static void addBonusToFile(int userId, int bonus) {
+        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("user_information.dat", true))) {
+            dos.writeInt(userId);
+            dos.writeInt(bonus);
+            System.out.println("Bonus added successfully!");
+        } catch (IOException e) {
+            System.out.println("Error adding bonus to file: " + e.getMessage());
+        }
+    }
+    
+    //Design
+    private void setSceneBackground(VBox container) {
+        String imagePath = "C:\\Users\\sarad\\Downloads\\WhatsApp Image 2024-01-10 at 08.49.41_ceed04bf.jpg";
+
+        Image backgroundImage = new Image("file:" + imagePath);
+
+        BackgroundImage background = new BackgroundImage(
+            backgroundImage,
+            BackgroundRepeat.NO_REPEAT,
+            BackgroundRepeat.NO_REPEAT,
+            BackgroundPosition.DEFAULT,
+            BackgroundSize.DEFAULT
+        );
+
+        Background backgroundWithImage = new Background(background);
+
+        container.setBackground(backgroundWithImage);
+    }
+
  
 }
