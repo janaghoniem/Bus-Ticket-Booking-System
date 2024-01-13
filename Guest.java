@@ -31,7 +31,7 @@ import javafx.stage.Stage;
  */
 public class Guest extends Users implements Serializable{
 
-    private int guest_phone;
+    protected int guest_phone;
     private HashMap<Integer, Booking> bookingHistory;
     protected static List<Guest> guests = new ArrayList<>();
     Scanner scanner = new Scanner(System.in);
