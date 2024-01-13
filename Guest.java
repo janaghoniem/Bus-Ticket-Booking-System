@@ -241,9 +241,4 @@ public class Guest extends Users implements Serializable{
         }
     }
 
-    public void search() 
-    {
-       
-    }
-
 }
