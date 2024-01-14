@@ -71,6 +71,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -87,31 +88,30 @@ public class Admin extends Users implements manages<Admin>{
     public static final List<Admin> admins = new ArrayList<>();
     //private static final int GUEST_PASSWORD_LENGTH = 5;
     private final StackPane stackPane = new StackPane();
-    //private static final String BACKGROUND_IMAGE_PATH = "file:///C:/Users/Electronica Care/Pictures/504795_pia00135_orig_718331.jpg";
+    //private static final String BACKGROUND_IMAGE_PATH = " file://C:/Users/Electronica Care/Pictures/504795_pia00135_orig_718331.jpg";
  //   private VBox selectedMenuItem; // Track the selected menu item
-private TextField searchField;  // Declare as instance variable
-private ListView<String> listView;  // Declare as instance variable
+private TextField searchField;  
+private ListView<String> listView;  
     private static final String ACCOUNTING_FILE_PATH = "accounting.dat";
 
-    protected double Salary;
-    protected int Bonus;
+    public double Salary;
+    public int Bonus;
 
     public StackPane getStackPane() {
         return stackPane;
     }
- public Scene manageUsers() {
+public Scene manageUsers() {
         VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
         stackPane.getChildren().clear();
         stackPane.getChildren().add(manageUsersMenu);
         setSceneBackground(manageUsersMenu);
 
-        Scene manageUsersScene = new Scene(stackPane, 600, 400);
+        Scene manageUsersScene = new Scene(stackPane, Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight());
         manageUsersScene.setFill(Color.rgb(135, 206, 250)); // Set the background color of the scene
         stackPane.setStyle("-fx-background-color: #358dca;"); // Set the background color of the StackPane
 
         return manageUsersScene;
-    }
- 
+    } 
  
 private Label createStyledLabel(String text) {
     Label label = new Label(text);
@@ -173,6 +173,16 @@ public Scene HomePageScene()
                     System.out.println(ex);
                 }
                 downUponExit(manageUsers);
+            });
+            
+            manageUsers.setOnMouseClicked(eh ->
+            {
+                Scene manageU = createManageUsersScene();
+                Stage primaryStage = (Stage) manageUsers.getScene().getWindow();
+                primaryStage.setScene(manageU);
+                primaryStage.setTitle("Bus-Ticket Booking System - Manage Users Page");
+                primaryStage.sizeToScene();
+                
             });
             
             ImageView busimg = new ImageView(new Image(new FileInputStream("/home/jana/Downloads/bus.png")));
@@ -282,10 +292,9 @@ public Scene HomePageScene()
       }
       
      
-      Scene homepage = new Scene(pane, 1200, 800);
+      Scene homepage = new Scene(pane, Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight());
       return homepage;
   }
-  
   private void upUponHover(StackPane pane)
   {
     TranslateTransition up = new TranslateTransition(Duration.millis(200), pane);
@@ -353,7 +362,7 @@ public Scene createManageUsersScene() {
         return manageUsersScene;
     }
 private void setSceneBackground(VBox container) {
-    String imagePath = "C:\\Users\\Electronica Care\\Pictures\\Screenshots\\Screenshot 2024-01-07 055407.png";
+    String imagePath = "C:\\Users\\Electronica Care\\Pictures\\Screenshots\\Screenshot 2024-01-13 074436.png";
 
     Image backgroundImage = new Image("file:" + imagePath);
 
@@ -383,7 +392,6 @@ public Label createtheStyledLabel(String text) {
     styledLabel.setStyle("-fx-font-size: 40; -fx-font-weight: bold; -fx-text-fill: white;");
     return styledLabel;
 }
-
 private VBox createManageUsersPane(Label welcomeLabel) {
     VBox manageUsersMenu = new VBox(20);
     manageUsersMenu.setAlignment(Pos.TOP_LEFT);
@@ -414,8 +422,8 @@ HBox welcomeBox = new HBox(welcomeLabel);
             createStyledButton("Remove User", event -> remove()),
             createStyledButton("Add Salary To User", event -> handleAddSalary()),
             createStyledButton("Add Bonus to User", event -> handleAddBonus()),
-            createStyledButton("Display User Reports", event -> handleDisplayUsers()),
-            createStyledButton("Display Booking Reports", event -> handleDisplayBookings()),
+            createStyledButton("User Reports", event -> handleDisplayUsers()),
+            createStyledButton("Booking Reports", event -> handleDisplayBookings()),
             createStyledButton("Edit User", event -> {
                 edit();
                 Button closeButton = createStyledButton("Close", closeEvent -> {
@@ -582,8 +590,7 @@ private void updateStack(Pane pane) {
     System.out.println("update stack sha8al"); 
 
     VBox stackContainer = new VBox();
-    setSceneBackground(stackContainer); // Set the background image
-
+    setSceneBackground(stackContainer); 
     stackContainer.getChildren().add(pane);
     stackPane.getChildren().clear();
     stackPane.getChildren().add(stackContainer);
@@ -591,7 +598,13 @@ private void updateStack(Pane pane) {
 
 
 private void handleDisplayBookings() {
-   /*be  ostBookedTripLabel = createStyledLabel("Most Booked Trip: " +
+    // Assuming that the existing VBox in the Manage Users pane is accessible
+    VBox manageUsersPane = (VBox) stackPane.getChildren().get(0);
+
+    // Clear existing items before adding new ones
+    manageUsersPane.getChildren().clear();
+
+    Label mostBookedTripLabel = createStyledLabel("Most Booked Trip: " +
             (Trips.mostBookedTrip() != null ? Trips.mostBookedTrip().toString() : "No trips available"));
     setLabelStyles(mostBookedTripLabel);
 
@@ -599,57 +612,93 @@ private void handleDisplayBookings() {
             (Trips.mostRevenuedTrip() != null ? Trips.mostRevenuedTrip().toString() : "No trips available"));
     setLabelStyles(mostRevenuedTripLabel);
 
-  DatePicker startDatePicker = new DatePicker();
-    startDatePicker.setPromptText("Select Start Date");
-    
-    DatePicker endDatePicker = new DatePicker();
-    endDatePicker.setPromptText("Select End Date");
-    
-    Button okButton = createStyledButton("OK", event -> {
-        LocalDate startDate = startDatePicker.getValue();
-        LocalDate endDate = endDatePicker.getValue();
+    // Create labels for average revenue and number of bookings over a specific period
+    Label averageRevenueLabel = createStyledLabel("Enter a period to calculate average revenue:");
+    setLabelStyles(averageRevenueLabel);
+
+    Label bookingCountLabel = createStyledLabel("Enter a period to calculate the number of bookings:");
+    setLabelStyles(bookingCountLabel);
+
+    Label avgRevenueResultLabel = createStyledLabel("");
+    setLabelStyles(avgRevenueResultLabel);
+
+    Label bookingCountResultLabel = createStyledLabel("");
+    setLabelStyles(bookingCountResultLabel);
+
+    DatePicker avgRevenueStartDatePicker = new DatePicker();
+    avgRevenueStartDatePicker.setPromptText("Select Start Date");
+
+    DatePicker avgRevenueEndDatePicker = new DatePicker();
+    avgRevenueEndDatePicker.setPromptText("Select End Date");
+
+    DatePicker bookingCountStartDatePicker = new DatePicker();
+    bookingCountStartDatePicker.setPromptText("Select Start Date");
+
+    DatePicker bookingCountEndDatePicker = new DatePicker();
+    bookingCountEndDatePicker.setPromptText("Select End Date");
+
+    Button avgRevenueOKButton = createStyledButton("OK", event -> {
+        LocalDate startDate = avgRevenueStartDatePicker.getValue();
+        LocalDate endDate = avgRevenueEndDatePicker.getValue();
 
         if (startDate != null && endDate != null && !endDate.isBefore(startDate)) {
             LocalDateTime startDateTime = startDate.atStartOfDay();
             LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
 
-            double totalRevenue = Booking.calculateTotalRevenue(startDateTime, endDateTime);
+            double avgRevenue = Booking.calculateTotalRevenue(startDateTime, endDateTime);
 
-            Label totalRevenueLabel = createStyledLabel("Total Revenue: " + totalRevenue);
-            setLabelStyles(totalRevenueLabel);
+            avgRevenueResultLabel.setText("Average Revenue: " + avgRevenue);
 
-            // Assuming that the existing VBox in the Manage Users pane is accessible
-            VBox manageUsersPane = (VBox) stackPane.getChildren().get(0);
-
-            // Clear existing labels before adding new ones
-            manageUsersPane.getChildren().removeIf(node -> node instanceof Label);
-
-            // Add the labels below the existing buttons
-            manageUsersPane.getChildren().addAll(
-                    mostBookedTripLabel,
-                    mostRevenuedTripLabel,
-                    totalRevenueLabel
-            );
+            // Update the label without shifting the layout
+            avgRevenueResultLabel.setVisible(true);
         } else {
             showAlert("Error", "Invalid date range. Please select a valid date range.", Alert.AlertType.ERROR);
         }
     });
 
-    VBox dateSelectionBox = new VBox(10, startDatePicker, endDatePicker, okButton);
-    dateSelectionBox.setAlignment(Pos.CENTER);
+    Button bookingCountOKButton = createStyledButton("OK", event -> {
+        LocalDate startDate = bookingCountStartDatePicker.getValue();
+        LocalDate endDate = bookingCountEndDatePicker.getValue();
 
-    // Assuming that the existing VBox in the Manage Users pane is accessible
-    VBox manageUsersPane = (VBox) stackPane.getChildren().get(0);
+        if (startDate != null && endDate != null && !endDate.isBefore(startDate)) {
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
 
-    // Clear existing labels before adding new ones
-    manageUsersPane.getChildren().removeIf(node -> node instanceof Label);
+            int bookingCount = Booking.getBookingsCountOverTimePeriod(startDateTime, endDateTime);
 
-    // Add the dateSelectionBox above the existing buttons
-    manageUsersPane.getChildren().add(dateSelectionBox);*/
+            bookingCountResultLabel.setText("Number of Bookings: " + bookingCount);
+
+            // Update the label without shifting the layout
+            bookingCountResultLabel.setVisible(true);
+        } else {
+            showAlert("Error", "Invalid date range. Please select a valid date range.", Alert.AlertType.ERROR);
+        }
+    });
+
+    VBox avgRevenueDateSelectionBox = new VBox(10, avgRevenueStartDatePicker, avgRevenueEndDatePicker, avgRevenueOKButton);
+    avgRevenueDateSelectionBox.setAlignment(Pos.CENTER);
+
+    VBox bookingCountDateSelectionBox = new VBox(10, bookingCountStartDatePicker, bookingCountEndDatePicker, bookingCountOKButton);
+    bookingCountDateSelectionBox.setAlignment(Pos.CENTER);
+
+    // Add the dateSelectionBoxes and labels above the existing buttons
+    manageUsersPane.getChildren().addAll(
+            mostBookedTripLabel,
+            mostRevenuedTripLabel,
+            averageRevenueLabel,
+            avgRevenueDateSelectionBox,
+            avgRevenueResultLabel,
+            bookingCountLabel,
+            bookingCountDateSelectionBox,
+            bookingCountResultLabel
+    );
+
+    // Update the stack with the modified manageUsersPane
+    updateStack(manageUsersPane);
 }
 
 private void handleDisplayUsers() {
-   /*abel receptionistBookingsLabel = createStyledLabel("Receptionist with the maximum no. of Bookings: " +
+   Label receptionistBookingsLabel = createStyledLabel("Receptionist with the maximum no. of Bookings: " +
             Booking.findReceptionistWithMostBookings());
     setLabelStyles(receptionistBookingsLabel);
 
@@ -675,13 +724,13 @@ private void handleDisplayUsers() {
             receptionistRevenueLabel,
             guestRevenueLabel
     );
+    
 }
 
 private void setLabelStyles(Label label) {
-    label.setTextFill(Color.web("#0a0c26"));
-    label.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-size: 20; -fx-font-weight: bold;"); */
+    label.setTextFill(Color.WHITE);
+    label.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-size: 20; -fx-font-weight: bold;");
 }
-
 
 public static void readUsersFromFile() {
     try (DataInputStream dis = new DataInputStream(new FileInputStream("user_information.dat"))) {
@@ -751,17 +800,6 @@ public static String generateGuestPassword() {
 
     return passwordBuilder.toString();
 }
-
-  
-/*/public boolean findUser(int id, String name) {
-    for (Users currentUser : users) {
-        if (currentUser.getID() == id || currentUser.getName().equals(name)) {
-            return true; 
-        }
-    }
-    return false; 
-}
-*/
 
     public void addSalary(int userId, double salary) {
                 readUsersFromFile();
@@ -878,7 +916,7 @@ imageView.setPreserveRatio(true);
     }
     
     
-    public static void managesTrips() throws IOException
+   /* public static void managesTrips() throws IOException
     {
         Trips t = new Trips();
         boolean continueEditing = true;
@@ -929,7 +967,7 @@ imageView.setPreserveRatio(true);
                 continueEditing = false;
             }
         }    
-    }
+    }*/
     
     
    @Override
@@ -952,7 +990,7 @@ public void add() {
     usersListView.setMaxHeight(30);
     usersListView.setMinWidth(50);
     usersListView.setVisible(true);
-    usersListView.setStyle("-fx-background-color: #292525; -fx-border-color: #ca7235;"); // Set background color
+  //  usersListView.setStyle("-fx-background-color: #292525; -fx-border-color: #ca7235;"); // Set background color
 
     Button addUserBtn = createStyledButton("Add User", event -> {
         String idText = idField.getText();
@@ -976,6 +1014,9 @@ public void add() {
                             Users newUser = new Users(id, password, name, userType);
                             users.add(newUser);
                             saveUsersToFile();
+if (userType == Type.RECEPTIONIST && newUser instanceof Receptionist) {
+                            Receptionist.storeReceptionistInfo((Receptionist) newUser);
+                        }
 
                             System.out.println("User added successfully!");
                             idField.clear();
@@ -997,11 +1038,13 @@ public void add() {
     Button goBackBtn = createStyledButton("Go Back", event -> {
         stackPane.getChildren().clear();
         stackPane.getChildren().add(welcomeLabel);
-        updateStack(createManageUsersPane(welcomeLabel));
+         VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+
+    updateStack(manageUsersMenu);
     });
     goBackBtn.setStyle("-fx-font-size: 12; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
 
-    VBox vbox = new VBox(10); // Adjusted spacing
+    VBox vbox = new VBox(20); 
     vbox.setAlignment(Pos.CENTER);
 
     vbox.getChildren().addAll(goBackBtn, idField, nameField, passwordField, userTypeComboBox, addUserBtn, usersListView);
@@ -1219,8 +1262,8 @@ public void edit() {
     updateStack(manageUsersMenu);
 }
 
-     @Override
-     public void search() {
+@Override
+public void search() {
     String searchTerm = searchField.getText().trim().toLowerCase();
 
     if (searchTerm.isEmpty()) {
@@ -1230,14 +1273,16 @@ public void edit() {
     }
 
     List<Users> matchingUsers = users.stream()
-            .filter(user -> String.valueOf(user.getID()).contains(searchTerm) || user.getName().toLowerCase().contains(searchTerm))
+            .filter(user -> String.valueOf(user.getID()).toLowerCase().contains(searchTerm)
+                    || user.getName().toLowerCase().contains(searchTerm)
+                    || user.position.toString().toLowerCase().contains(searchTerm))
             .collect(Collectors.toList());
 
     if (matchingUsers.isEmpty()) {
         listView.getItems().setAll("No users found matching the search term.");
     } else {
         List<String> userStrings = matchingUsers.stream()
-                .map(user -> "ID: " + user.getID() + ", Name: " + user.getName())
+                .map(user -> "ID: " + user.getID() + " | Name: " + user.getName() + " | Type: " + user.position)
                 .collect(Collectors.toList());
 
         listView.getItems().setAll(userStrings);
@@ -1245,5 +1290,6 @@ public void edit() {
 
     listView.setVisible(true);
 }
+
 
 }
