@@ -142,6 +142,7 @@ import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -183,62 +184,8 @@ public class Trips implements manages, Serializable {
         public String getDisplayName() {
             return displayName;
         }
-
-        public static Map<String, String> getDisplayNames() {
-            Map<String, String> displayNames = new HashMap<>();
-            for (Destination destination : values())
-            {
-                displayNames.put(destination.name(), destination.getDisplayName());
-            }
-            return displayNames;
-        }
-
-        public static List<String> getDestinationBusStops(Destination destination) {
-            return destinationBusStops.get(destination);
-        }
-
-        public static HashMap<Destination, List<String>> getDestinationBusStops() {
-            return destinationBusStops;
-        }
-
-        public static List<String> getCairoBusStops() {
-            return cairoBusStops;
-        }
-
-        public static List<String> getAlexBusStops() {
-            return alexBusStops;
-        }
-
-        public static List<String> getHurghadaBusStops() {
-            return hurghadaBusStops;
-        }
-
-        public static List<String> getMarsaAlamBusStops() {
-            return marsaAlamBusStops;
-        }
-
-        public static List<String> getSokhnaBusStops() {
-            return sokhnaBusStops;
-        }
-
-        public static List<String> getNuweibaBusStops() {
-            return nuweibaBusStops;
-        }
-
-        public static List<String> getMarsaMatrouhBusStops() {
-            return marsaMatrouhBusStops;
-        }
-
-        public static List<String> getRasSedrBusStops() {
-            return rasSedrBusStops;
-        }
-
-        public static List<String> getPortSaidBusStops() {
-            return portSaidBusStops;
-        }
-
         public static HashMap<Destination, List<String>> destinationBusStops = new HashMap<>();
-        public static List<String> cairoBusStops = new ArrayList<>();
+        public static final List<String> cairoBusStops = new ArrayList<>();
         public static final List<String> alexBusStops = new ArrayList<>();
         public static final List<String> hurghadaBusStops = new ArrayList<>();
         public static final List<String> marsaAlamBusStops = new ArrayList<>();
@@ -252,21 +199,21 @@ public class Trips implements manages, Serializable {
         {
 
             // Cairo
-            cairoBusStops.add("Cairo (Tahrir)");
-            cairoBusStops.add("Cairo (Giza)");
-            cairoBusStops.add("Cairo (Almaza)");
+            cairoBusStops.add("Cairo(Tahrir)");
+            cairoBusStops.add("Cairo(Giza)");
+            cairoBusStops.add("Cairo(Almaza)");
             cairoBusStops.add("Tagamou El-Khames");
             cairoBusStops.add("NasrCity Station");
             cairoBusStops.add("Nady El Sekka");
             cairoBusStops.add("ElRehab");
             cairoBusStops.add("Madinaty");
-            cairoBusStops.add("Cairo (Kolaly)");
+            cairoBusStops.add("Cairo(Kolaly)");
             cairoBusStops.add("Sixth of October");
             cairoBusStops.add("Alex Gate");
 
             // Alexandria
-            alexBusStops.add("Sedi Gaber - Smouha");
-            alexBusStops.add("Alexandria (Moharam BK)");
+            alexBusStops.add("Sedi Gaber-Smouha");
+//            alexBusStops.add("Alexandria (Moharam BK)");
             alexBusStops.add("Amirya");
             alexBusStops.add("Miamy");
 
@@ -281,7 +228,7 @@ public class Trips implements manages, Serializable {
             sokhnaBusStops.add("Porto El Sokhna");
             sokhnaBusStops.add("Porto South Beach");
             sokhnaBusStops.add("Cancun");
-            sokhnaBusStops.add("Mountain View 1 (Dayra Camp)");
+//            sokhnaBusStops.add("Mountain View 1 (Dayra Camp)");
             sokhnaBusStops.add("Grand Ocean");
 
             //  nuweiba
@@ -294,9 +241,9 @@ public class Trips implements manages, Serializable {
 
             //  ras sedr
             rasSedrBusStops.add("Mousa Coast");
-            rasSedrBusStops.add("Matarma Bay_ Ras Sedr");
-            rasSedrBusStops.add("Tavira_ Ras Sedr");
-            rasSedrBusStops.add("Lahaisenda_ Ras Sedr");
+            rasSedrBusStops.add("Matarma Bay");
+            rasSedrBusStops.add("Tavira");
+            rasSedrBusStops.add("Lahaisenda");
 
             //  port siad
             portSaidBusStops.add("Port Said Downtown");
@@ -325,6 +272,8 @@ public class Trips implements manages, Serializable {
     private Destination To_Destination;
     private String From_BusStop;
     private String To_BusStop;
+    public static HashMap<Integer, Trips> TripsMap = new HashMap<>();
+
     private double price;            //price range  
     private LocalDateTime ArrivalDateTime;
     private LocalDateTime DepartureDateTime;
@@ -332,8 +281,8 @@ public class Trips implements manages, Serializable {
     private transient LocalTime DepartureTime;
     private transient LocalDate ArrivalDate;
     private transient LocalDate DepartureDate;
-    public static HashMap<Integer, Trips> TripsMap = new HashMap<>();
     public transient int countTrips = 0;
+
     private transient String labelStyle = "-fx-text-fill: #F0F0F0;";
     private transient Font boldFont = Font.font("Arial", FontWeight.BOLD, 18);
     private transient String comboBoxStyle = "-fx-background-color: #F0F0F0;"
@@ -349,11 +298,11 @@ public class Trips implements manages, Serializable {
     private transient VBox vbox = new VBox();
 
 //Constructors
-    public Trips() {
+    public Trips() {  //*
 
     }
 
-    public Trips(int trip_id, String vehicle_id, Destination From_Destination, Destination To_Destination, String From_BusStop, String To_BusStop, double price, LocalTime ArrivalTime, LocalTime DepartureTime, LocalDateTime ArrivalDateTime, LocalDateTime DepartureDateTime) {
+    public Trips(int trip_id, String vehicle_id, Destination From_Destination, Destination To_Destination, String From_BusStop, String To_BusStop, double price, LocalTime ArrivalTime, LocalTime DepartureTime, LocalDateTime ArrivalDateTime, LocalDateTime DepartureDateTime) {  //*
         this.trip_id = trip_id;
         this.vehicle_id = vehicle_id;
         this.From_Destination = From_Destination;
@@ -367,7 +316,7 @@ public class Trips implements manages, Serializable {
         this.DepartureDateTime = DepartureDateTime;
     }
 
-    public Trips(int trip_id, String vehicle_id, Destination From_Destination, Destination To_Destination, String From_BusStop, String To_BusStop, double price, LocalDateTime ArrivalDateTime, LocalDateTime DepartureDateTime) {
+    public Trips(int trip_id, String vehicle_id, Destination From_Destination, Destination To_Destination, String From_BusStop, String To_BusStop, double price, LocalDateTime ArrivalDateTime, LocalDateTime DepartureDateTime) {  //*
         this.trip_id = trip_id;
         this.vehicle_id = vehicle_id;
         this.From_Destination = From_Destination;
@@ -380,95 +329,95 @@ public class Trips implements manages, Serializable {
     }
 
 //Setters & Getters
-    public int getTrip_id() {
+    public int getTrip_id() { //*
         return trip_id;
     }
 
-    public void setTrip_id(int trip_id) {
+    public void setTrip_id(int trip_id) { //*
         this.trip_id = trip_id;
     }
 
     public String getVehicle_id() {// de leeha alert if null ,lama ngm3 el classes nb2a nshlha 
         return (vehicle_id != null) ? vehicle_id : "";
     }
-
+//*
     public void setVehicle_id(String vehicle_id) {
         this.vehicle_id = vehicle_id;
-    }
+    }//*
 
-    public double getPrice() {
+    public double getPrice() {   //*
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(double price) {   //*
         this.price = price;
     }
 
-    public LocalDateTime getArrivalDateTime() {
+    public LocalDateTime getArrivalDateTime() {    //*
         return ArrivalDateTime;
     }
 
-    public void setArrivalDateTime(LocalDateTime ArrivalDateTime) {
+    public void setArrivalDateTime(LocalDateTime ArrivalDateTime) {  //*
         this.ArrivalDateTime = ArrivalDateTime;
     }
 
-    public LocalDateTime getDepartureDateTime() {
+    public LocalDateTime getDepartureDateTime() {  //*
         return DepartureDateTime;
     }
 
     public void setDepartureDateTime(LocalDateTime DepartureDateTime) {
         this.DepartureDateTime = DepartureDateTime;
-    }
+    }//*
 
-    public int getCountTrips() {
+    public int getCountTrips() {//*
         return countTrips++;
     }
 
-    public void setCountTrips(int countTrips) {
+    public void setCountTrips(int countTrips) {  //*
         this.countTrips = countTrips;
     }
 
-    public Vehicle getVehicle() {
+    public Vehicle getVehicle() {    //*
         return vehicle;
     }
 
-    public void setVehicle(Vehicle vehicle) {
+    public void setVehicle(Vehicle vehicle) {   //*
         this.vehicle = vehicle;
     }
 
-    public Destination getFrom_Destination() {
+    public Destination getFrom_Destination() { //*
         return From_Destination;
     }
 
-    public void setFrom_Destination(Destination From_Destination) {
+    public void setFrom_Destination(Destination From_Destination) { ///*
         this.From_Destination = From_Destination;
     }
 
-    public Destination getTo_Destination() {
+    public Destination getTo_Destination() { //*
         return To_Destination;
     }
 
-    public void setTo_Destination(Destination To_Destination) {
+    public void setTo_Destination(Destination To_Destination) { //*
         this.To_Destination = To_Destination;
     }
 
-    public String getFrom_BusStop() {
+    public String getFrom_BusStop() {  //*
         return From_BusStop;
     }
 
-    public void setFrom_BusStop(String From_BusStop) {
+    public void setFrom_BusStop(String From_BusStop) { //*
         this.From_BusStop = From_BusStop;
     }
 
-    public String getTo_BusStop() {
+    public String getTo_BusStop() { //*
         return To_BusStop;
     }
 
-    public void setTo_BusStop(String To_BusStop) {
+    public void setTo_BusStop(String To_BusStop) {  //*
         this.To_BusStop = To_BusStop;
     }
 
-    public LocalTime getArrivalTime() {
+    public LocalTime getArrivalTime() {  //*
         if (ArrivalTime != null)
         {
             return ArrivalTime;
@@ -478,11 +427,11 @@ public class Trips implements manages, Serializable {
         }
     }
 
-    public void setArrivalTime(LocalTime ArrivalTime) {
+    public void setArrivalTime(LocalTime ArrivalTime) {  //*
         this.ArrivalTime = ArrivalTime;
     }
 
-    public LocalTime getDepartureTime() {
+    public LocalTime getDepartureTime() {    //*
         if (DepartureTime != null)
         {
             return DepartureTime;
@@ -492,11 +441,11 @@ public class Trips implements manages, Serializable {
         }
     }
 
-    public void setDepartureTime(LocalTime DepartureTime) {
+    public void setDepartureTime(LocalTime DepartureTime) {  //*
         this.DepartureTime = DepartureTime;
     }
 
-    public LocalDate getArrivalDate() {
+    public LocalDate getArrivalDate() { //*
         if (ArrivalDate != null)
         {
             return ArrivalDate;
@@ -506,11 +455,11 @@ public class Trips implements manages, Serializable {
         }
     }
 
-    public void setArrivalDate(LocalDate ArrivalDate) {
+    public void setArrivalDate(LocalDate ArrivalDate) {  //*
         this.ArrivalDate = ArrivalDate;
     }
 
-    public LocalDate getDepartureDate() {
+    public LocalDate getDepartureDate() { //*
         if (DepartureDate != null)
         {
             return DepartureDate;
@@ -520,20 +469,20 @@ public class Trips implements manages, Serializable {
         }
     }
 
-    public void setDepartureDate(LocalDate DepartureDate) {
+    public void setDepartureDate(LocalDate DepartureDate) {   //*
         this.DepartureDate = DepartureDate;
     }
 
-    public static HashMap<Integer, Trips> getTripsMap() {
+    public static HashMap<Integer, Trips> getTripsMap() {   //*
         return TripsMap;
     }
 
-    public static void setTripsMap(HashMap<Integer, Trips> TripsMap) {
+    public static void setTripsMap(HashMap<Integer, Trips> TripsMap) {  //*
         Trips.TripsMap = TripsMap;
     }
 
     @Override
-    public String toString() {
+    public String toString() {   //*
         return "Trips{trip_id=" + trip_id + ", vehicle_id=" + vehicle_id + ", From_Destination="
                 + From_Destination + ", To_Destination=" + To_Destination + ", From_BusStop=" + From_BusStop
                 + ", To_BusStop=" + To_BusStop + ", price=" + price + ", ArrivalDateTime=" + ArrivalDateTime
@@ -541,7 +490,7 @@ public class Trips implements manages, Serializable {
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode() {  //*
         int hash = 7;
         hash = 59 * hash + Objects.hashCode(this.vehicle_id);
         hash = 59 * hash + Objects.hashCode(this.From_Destination);
@@ -555,7 +504,7 @@ public class Trips implements manages, Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj) {//*
         if (this == obj)
         {
             return true;
@@ -699,7 +648,7 @@ public class Trips implements manages, Serializable {
 
         return randomID;
     }
-
+   
     public static VBox create_destination_ComboBox(Font font, int spacing) {
         // ComboBox for Destinations
         ObservableList<String> destOptions = FXCollections.observableArrayList();
@@ -759,15 +708,18 @@ public class Trips implements manages, Serializable {
 
         return vbox;
     }
-
+    
     public VBox DisplayTrips() {
+        Color labelStyle = Color.WHITE;
         System.out.println("TripsMap size: " + Trips.TripsMap.size());
         try
         {
             Trips.ReadBinaryFile();
+
         } catch (FileNotFoundException e)
         {
-            Logger.getLogger(NewFXMain.class.getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(NewFXMain.class
+                    .getName()).log(Level.SEVERE, null, e);
         }
         System.out.println("TripsMap size: " + Trips.TripsMap.size());
         int count = 0;
@@ -775,19 +727,17 @@ public class Trips implements manages, Serializable {
         String frombusStop;
         String tobusStop;
         GridPane displayGrid = new GridPane();
-
         for (Trips trip : Trips.TripsMap.values())
         {
             frombusStop = trip.getFrom_BusStop();
             tobusStop = trip.getTo_BusStop();
             HBox pane = new HBox(45);
-            pane.setAlignment(Pos.CENTER);
             Button editButton = new Button();
-            Image delete_img = new Image("file:///C:/Users/Roaa/Downloads/trash.png");
+            Image delete_img = new Image("file:///C:/Users/Roaa/Downloads/WhatsApp Image 2024-01-14 at 00.26.18_bc9f698c.jpg");
             ImageView iconView = new ImageView(delete_img);
             iconView.setFitHeight(20);
             iconView.setFitWidth(20);
-            Image edit_img = new Image("file:///C:/Users/Roaa/Downloads/draw.png");
+            Image edit_img = new Image("file:///C:/Users/Roaa/Downloads/WhatsApp Image 2024-01-14 at 00.29.56_6eabf1c1.jpg");
             ImageView iconView1 = new ImageView(edit_img);
             iconView1.setFitHeight(20);
             iconView1.setFitWidth(20);
@@ -800,19 +750,35 @@ public class Trips implements manages, Serializable {
             String formattedArrivalDateTime = trip.getArrivalDateTime().format(formatter);
             String formattedDepartureDateTime = trip.getDepartureDateTime().format(formatter);
             Label tripIdLabel = new Label(Integer.toString(trip.getTrip_id()));
-            tripIdLabel.setMinWidth(10);
+            tripIdLabel.setMinWidth(20);
             Label fromBusStopLabel = new Label(frombusStop);
             fromBusStopLabel.setMinWidth(150);
             Label toBusStopLabel = new Label(tobusStop);
-            toBusStopLabel.setMinWidth(150);
+            toBusStopLabel.setMinWidth(139);
             Label departureLabel = new Label(formattedDepartureDateTime);
-            departureLabel.setMinWidth(100);
+            departureLabel.setMinWidth(136);
             Label arrivalLabel = new Label(formattedArrivalDateTime);
-            arrivalLabel.setMinWidth(100);
+            arrivalLabel.setMinWidth(136);
             Label vehicleIdLabel = new Label(trip.getVehicle_id());
-            vehicleIdLabel.setMinWidth(40);
+            vehicleIdLabel.setMinWidth(150);
             Label priceLabel = new Label(Double.toString(trip.getPrice()));
-            priceLabel.setMinWidth(10);
+            priceLabel.setMinWidth(50);
+            tripIdLabel.setTextFill(Color.WHITE);
+            fromBusStopLabel.setTextFill(Color.WHITE);
+            toBusStopLabel.setTextFill(Color.WHITE);
+            departureLabel.setTextFill(Color.WHITE);
+            arrivalLabel.setTextFill(Color.WHITE);
+            vehicleIdLabel.setTextFill(Color.WHITE);
+            priceLabel.setTextFill(Color.WHITE);
+            tripIdLabel.setTextFill(Color.WHITE);
+            tripIdLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+            fromBusStopLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+            toBusStopLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+            departureLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+            arrivalLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+            vehicleIdLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+            priceLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+
             pane.getChildren().addAll(
                     tripIdLabel,
                     fromBusStopLabel,
@@ -824,15 +790,17 @@ public class Trips implements manages, Serializable {
                     editButton,
                     deleteButton
             );
+            HBox box = displayLabels();
             vbox.getChildren().add(pane);
             editButton.setOnAction(event -> edit(trip, pane, vbox));
             deleteButton.setOnAction(event -> handleDeleteButton(trip, pane, vbox));
             count++;
         }
         return vbox;
-    }
+    }   //check
 
     public VBox DisplayTrips(String searchValue) {
+        // Your existing logic for displaying trips
         int count = 0;
         VBox vbox = new VBox(30);
 
@@ -854,11 +822,11 @@ public class Trips implements manages, Serializable {
                 HBox pane = new HBox(45);
                 pane.setAlignment(Pos.CENTER);
                 Button editButton = new Button();
-                Image delete_img = new Image("file:///C:/Users/Roaa/Downloads/trash.png");
+                Image delete_img = new Image("file:///C:/Users/Roaa/Downloads/WhatsApp Image 2024-01-14 at 00.26.18_bc9f698c.jpg");
                 ImageView iconView = new ImageView(delete_img);
                 iconView.setFitHeight(20);
                 iconView.setFitWidth(20);
-                Image edit_img = new Image("file:///C:/Users/Roaa/Downloads/draw.png");
+                Image edit_img = new Image("file:///C:/Users/Roaa/Downloads/WhatsApp Image 2024-01-14 at 00.29.56_6eabf1c1.jpg");
                 ImageView iconView1 = new ImageView(edit_img);
                 iconView1.setFitHeight(20);
                 iconView1.setFitWidth(20);
@@ -881,6 +849,22 @@ public class Trips implements manages, Serializable {
                 vehicleIdLabel.setMinWidth(40);
                 Label priceLabel = new Label(Double.toString(trip.getPrice()));
                 priceLabel.setMinWidth(10);
+                tripIdLabel.setTextFill(Color.WHITE);
+                fromBusStopLabel.setTextFill(Color.WHITE);
+                toBusStopLabel.setTextFill(Color.WHITE);
+                departureLabel.setTextFill(Color.WHITE);
+                arrivalLabel.setTextFill(Color.WHITE);
+                vehicleIdLabel.setTextFill(Color.WHITE);
+                priceLabel.setTextFill(Color.WHITE);
+                tripIdLabel.setTextFill(Color.WHITE);
+                tripIdLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+                fromBusStopLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+                toBusStopLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+                departureLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+                arrivalLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+                vehicleIdLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+                priceLabel.setFont(Font.font("Montserrat", FontWeight.BOLD, 14));
+
                 pane.getChildren().addAll(
                         tripIdLabel,
                         fromBusStopLabel,
@@ -906,36 +890,52 @@ public class Trips implements manages, Serializable {
         }
 
         return vbox;
-    }
-
+    }   //check
+    
     public HBox displayLabels() {
-        Font boldFont = Font.font("Arial", FontWeight.EXTRA_BOLD, 18);
-        String labelStyle = "-fx-text-fill: #000000;";
+
+        Color labelStyle = Color.web("#ffb000");
+        Font boldFont = Font.font("Montserrat", FontWeight.BOLD, 20);
+
         Label ID = new Label("ID");
+
         ID.setFont(boldFont);
-        ID.setStyle(labelStyle);
+
+        ID.setTextFill(labelStyle);
         Label from = new Label("From");
+
         from.setFont(boldFont);
-        from.setStyle(labelStyle);
+
+        from.setTextFill(labelStyle);
         Label to = new Label("To");
+
         to.setFont(boldFont);
-        to.setStyle(labelStyle);
+
+        to.setTextFill(labelStyle);
         Label departure = new Label("Departure");
+
         departure.setFont(boldFont);
-        departure.setStyle(labelStyle);
+
+        departure.setTextFill(labelStyle);
         Label arrival = new Label("Arrival");
+
         arrival.setFont(boldFont);
-        arrival.setStyle(labelStyle);
+
+        arrival.setTextFill(labelStyle);
         Label LicensePlate = new Label("License Plate");
+
         LicensePlate.setFont(boldFont);
-        LicensePlate.setStyle(labelStyle);
+
+        LicensePlate.setTextFill(labelStyle);
         Label price = new Label("Price");
+
         price.setFont(boldFont);
-        price.setStyle(labelStyle);
-        HBox pane = new HBox(100, ID, from, to, departure, arrival, LicensePlate, price);
-        pane.setAlignment(Pos.CENTER);
+
+        price.setTextFill(labelStyle);
+        HBox pane = new HBox(110, ID, from, to, departure, arrival, LicensePlate, price);
+
         return pane;
-    }
+    }  //check   
 
     public void handleDeleteButton(Trips trip, HBox pane, VBox vbox) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -964,47 +964,52 @@ public class Trips implements manages, Serializable {
             }
         }
     }
+
     private Scene createMainScene() {
-        Font manageFont = Font.font("Arial", FontWeight.EXTRA_BOLD, 30);
+
         Label manageTrips = new Label("Manage Trips");
-        manageTrips.setFont(manageFont);
+        manageTrips.setTextFill(Color.web("#ffb000"));
+        manageTrips.setFont(Font.font("Montserrat ", FontWeight.BOLD, 60));
         manageTrips.setAlignment(Pos.TOP_LEFT);
 // delete button
-        Image delete_img = new Image("file:///C:/Users/Roaa/Downloads/trash.png");
-        ImageView iconView = new ImageView(delete_img);
-        iconView.setFitHeight(20);
-        iconView.setFitWidth(20);
-        Button deleteAllButton = new Button();
-        deleteAllButton.setGraphic(iconView);
-        deleteAllButton.setStyle("-fx-background-color:transparent;");
-        // add button
-        Image add_img = new Image("file:///C:/Users/Roaa/Downloads/add.png");
-        ImageView iconView2 = new ImageView(add_img);
-        iconView2.setFitHeight(20);
-        iconView2.setFitWidth(20);
-        Button addTripsButton = new Button();
-        addTripsButton.setGraphic(iconView2);
-        addTripsButton.setStyle("-fx-background-color:transparent;");
+        Button deleteAllButton = new Button("Delete All Trips");
+        deleteAllButton.setTextFill(Color.web("#0a0c26"));
+        deleteAllButton.setStyle("-fx-background-color: #ffb000; -fx-border-color: #ffb000;");
+        deleteAllButton.setFont(Font.font("Montserrat", FontWeight.BOLD, 19));
+        deleteAllButton.setPrefWidth(200);
+        Button addTripsButton = new Button("Add Trip");
+        addTripsButton.setTextFill(Color.web("#0a0c26"));
+        addTripsButton.setStyle("-fx-background-color: #ffb000; -fx-border-color: #ffb000;");
+        addTripsButton.setFont(Font.font("Montserrat", FontWeight.BOLD, 19));
+//        addTripsButton.setPrefWidth(150);
+//        addTripsButton.setPrefHeight(1);
+                addTripsButton.setPrefSize(150, 1);
+
         TextField searchField = new TextField();
-        searchField.setPrefWidth(400);
+        searchField.setFont(Font.font("Montserrat", FontWeight.BOLD, 15));
+        searchField.setStyle("-fx-background-color: rgba(0, 0, 0, 0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-border-width: 3px");
+//        searchField.setPrefWidth(700);
+//        searchField.setPrefHeight(1);
+        searchField.setPrefSize(700, 1);
+
         // Row 1
         HBox row1 = new HBox(10);
-        row1.getChildren().addAll(deleteAllButton, searchField, addTripsButton);
-        row1.setAlignment(Pos.CENTER);
+        row1.getChildren().addAll(addTripsButton, searchField, deleteAllButton);
+//        row1.setAlignment(Pos.);
         HBox row2 = displayLabels();
         vbox = DisplayTrips();
         ScrollPane scrollpane = new ScrollPane(vbox);
-        scrollpane.setStyle("-fx-background-color: white;");
-        vbox.setStyle("-fx-background-color: white;");
-        scrollpane.setPadding(new Insets(30));
+        scrollpane.setStyle("-fx-background: transparent; -fx-background-color: transparent; ");
+        scrollpane.setFitToWidth(true);
+        scrollpane.setFitToHeight(true);
         searchField.setOnKeyPressed(event ->
         {
-            String searchTerm = searchField.getText().trim();
+            String searchTerm = searchField.getText();
             vbox.getChildren().clear(); // Clear existing display
             vbox.getChildren().add(DisplayTrips(searchTerm));
         });
         // Row 3 
-        VBox layout = new VBox(30, manageTrips, row1, row2, scrollpane);
+        VBox layout = new VBox(10, manageTrips, row1, row2, vbox);
         deleteAllButton.setOnAction(e ->
         {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -1030,12 +1035,24 @@ public class Trips implements manages, Serializable {
                 }
             }
         });
-        layout.setPadding(new Insets(10));
-        layout.setStyle("-fx-background-color: #FFFFFF;");
+        layout.setPadding(new Insets(15));
+        layout.setAlignment(Pos.TOP_LEFT);
         addTripsButton.setOnAction(event -> add());
-        return new Scene(layout, 1200, 500);
-    }
+        Image backgroundImage = new Image("file:///C:/Users/Roaa/Downloads/WhatsApp Image 2024-01-13 at 19.47.43_6b37a660.jpg");
+        ImageView backgroundView = new ImageView(backgroundImage);
+//        backgroundView.setFitWidth(1200);
+//        backgroundView.setFitHeight(500);
+        layout.setStyle("-fx-background-color: transparent;");
+        Pane pane = new Pane(backgroundView, layout);
+        pane.setStyle("-fx-background-color: transparent;");
+        pane.setBackground(Background.EMPTY);
 
+        vbox.setStyle("-fx-background-color: transparent;");
+
+        return new Scene(pane, 1200, 500);
+    }   //check   
+
+    
     @Override
     public void edit() {
         Font font = new Font(15);
@@ -1063,8 +1080,7 @@ public class Trips implements manages, Serializable {
         Button save = new Button("Save");
         Button cancel = new Button("Cancel");  //   UPDATED
         grid.setHgap(15);
-        
-        
+
     }
 
     public void edit(Trips trip, HBox pane, VBox vbox) {
@@ -1136,7 +1152,7 @@ public class Trips implements manages, Serializable {
                 grid.add(save, 1, 3);
                 grid.add(cancel, 2, 3);
                 VBox vbox1 = new VBox(5, grid);
-                vbox1.setStyle("-fx-background-color: white;");
+                vbox1.setStyle("-fx-background: transparent; -fx-background-color: transparent; ");
 
                 save.setOnAction(event ->
                 {
@@ -1214,8 +1230,10 @@ public class Trips implements manages, Serializable {
                         System.out.println("After updating labels: " + pane.getChildren());
                         edit.close(); //   UPDATED
                     }
-                });
-                edit.setScene(new Scene(vbox1, 400, 250));    //   UPDATED
+                });        
+                Scene scene = new Scene(vbox1,400,250);
+                scene.setFill(Color.TRANSPARENT);
+                edit.setScene(scene);    //   UPDATED
 
             } else if ("Time".equals(selectedCategory))
             {
@@ -1326,9 +1344,11 @@ public class Trips implements manages, Serializable {
                         Trips.WriteBinaryFile();
                         vbox.getChildren().clear();
                         vbox.getChildren().addAll(DisplayTrips());
+
                     } catch (FileNotFoundException ex)
                     {
-                        Logger.getLogger(NewFXMain.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(NewFXMain.class
+                                .getName()).log(Level.SEVERE, null, ex);
                     }
                     pane.layout();
                     edit.close();     //   UPDATED
@@ -1390,9 +1410,11 @@ public class Trips implements manages, Serializable {
                         Trips.WriteBinaryFile();
                         vbox.getChildren().clear();
                         vbox.getChildren().addAll(DisplayTrips());
+
                     } catch (FileNotFoundException ex)
                     {
-                        Logger.getLogger(NewFXMain.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(NewFXMain.class
+                                .getName()).log(Level.SEVERE, null, ex);
                     }
                     pane.layout();
                     System.out.println("After updating labels: " + pane.getChildren());
@@ -1452,9 +1474,11 @@ public class Trips implements manages, Serializable {
                         Trips.WriteBinaryFile();
                         vbox.getChildren().clear();
                         vbox.getChildren().addAll(DisplayTrips());
+
                     } catch (FileNotFoundException ex)
                     {
-                        Logger.getLogger(NewFXMain.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(NewFXMain.class
+                                .getName()).log(Level.SEVERE, null, ex);
                     }
                     pane.layout();
                     System.out.println("After updating labels: " + pane.getChildren());
