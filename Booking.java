@@ -721,7 +721,7 @@ for (Booking book : Booking.getBook().values()) {
  
 }
 
-    public Scene ExistingBookings(Stage primaryStage) {
+        public Scene ExistingBookings(Stage primaryStage) {
         GridPane root1 = new GridPane();
         scene4 = new Scene(root1, windowWidth, windowHeight);
 
@@ -729,17 +729,41 @@ for (Booking book : Booking.getBook().values()) {
         root1.setHgap(10);
         root1.setVgap(10);
         root1.setPadding(new Insets(20));
-        
-        Label lbl24 = new Label("All ExistingBookings");
-        lbl24.setTextFill(Color.WHITE);
-        Label lbl25 = new Label("Booking ID:");
-        lbl25.setTextFill(Color.WHITE);
-        TextField txt1 = new TextField("");
+        String backgroundImageFile = "file:///C:/Users/Electronica Care/Pictures/Screenshots/Screenshot 2024-01-13 074436.png";
+    Image backgroundImage = new Image(backgroundImageFile);
+    BackgroundSize backgroundSize = new BackgroundSize(windowWidth, windowHeight, false, false, true, true);
+    BackgroundImage background = new BackgroundImage(
+            backgroundImage,
+            BackgroundRepeat.NO_REPEAT,
+            BackgroundRepeat.NO_REPEAT,
+            BackgroundPosition.DEFAULT,
+            backgroundSize
+    );
+            root1.setBackground(new Background(background));
 
+        Label lbl24 = new Label("Manage Bookings");
+    lbl24.setTextFill(Color.WHITE);
+    lbl24.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-size: 35; -fx-font-weight: bold;");
+
+    Label lbl25 = new Label("Search:");
+    lbl25.setTextFill(Color.WHITE);
+    lbl25.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-size: 19; -fx-font-weight: bold;");
+
+    TextField txt1 = new TextField("");
+    txt1.setPromptText("Search Users");
+    txt1.setStyle("-fx-font-size: 15; -fx-background-color: rgba(0, 0, 0, 0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-border-width: 3px");
+    txt1.setMaxWidth(800);
+    txt1.setMinWidth(800);
         Button btn8 = new Button("cancel search");
+            btn8.setStyle("-fx-font-size: 15; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
+
         Button backBtn = new Button("Back");
+                    backBtn.setStyle("-fx-font-size: 15; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
+
         Button cancelBtn = new Button("Cancel");
         Button exitBtn = new Button("Exit");
+            exitBtn.setStyle("-fx-font-size: 15; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
+
         exitBtn.setOnAction(e -> primaryStage.close());
 
         root1.add(exitBtn, 3, 3);
@@ -747,11 +771,11 @@ for (Booking book : Booking.getBook().values()) {
 
         backBtn.setOnAction(e -> {
             Receptionist r = new Receptionist();
-            try {
+         /*   try {
                 primaryStage.setScene(r.ManageBookings(primaryStage));
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(Booking.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }*/
 
             readFromFile();
 
@@ -763,6 +787,7 @@ for (Booking book : Booking.getBook().values()) {
         });
 
         Button deleteAllBtn = new Button("Delete All");
+    deleteAllBtn.setStyle("-fx-font-size: 15; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
 
         deleteAllBtn.setOnAction(eh -> {
             Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -822,6 +847,23 @@ btn8.setOnAction(eh->{
         Label arrivalDateTimeLabel = new Label(String.format("%-30s", "Arrival Date Time"));
         Label licensePlateLabel = new Label(String.format("%-30s", "License Plate"));
         Label receptionistIdLabel = new Label(String.format("%-30s", "Receptionist ID"));
+        
+        
+String labelFontStyle = "-fx-font-family: 'Helvetica World'; -fx-font-weight: bold;";
+    bookIdLabel.setStyle(labelFontStyle);
+    guestNameLabel.setStyle(labelFontStyle);
+    guestIdLabel.setStyle(labelFontStyle);
+    tripIdLabel.setStyle(labelFontStyle);
+    ticketsLabel.setStyle(labelFontStyle);
+    totalPriceLabel.setStyle(labelFontStyle);
+    fromDestinationLabel.setStyle(labelFontStyle);
+    fromBusStopLabel.setStyle(labelFontStyle);
+    departureDateTimeLabel.setStyle(labelFontStyle);
+    toDestinationLabel.setStyle(labelFontStyle);
+    toBusStopLabel.setStyle(labelFontStyle);
+    arrivalDateTimeLabel.setStyle(labelFontStyle);
+    licensePlateLabel.setStyle(labelFontStyle);
+    receptionistIdLabel.setStyle(labelFontStyle);
 
         propertyNamesHBox.getChildren().addAll(
                 bookIdLabel,
@@ -900,20 +942,8 @@ btn8.setOnAction(eh->{
 
         primaryStage.setTitle("Existing Bookings");
         primaryStage.setScene(scene4);
-        root1.setBackground(new Background(background));
+     //   root1.setBackground(new Background(background));
         return scene4;
-    }
-
-    private HBox findBookingHBox(VBox bookingsVBox, Node sourceNode) {
-        for (Node node : bookingsVBox.getChildren()) {
-            if (node instanceof HBox) {
-                HBox bookingHBox = (HBox) node;
-                if (bookingHBox.getChildren().contains(sourceNode)) {
-                    return bookingHBox;
-                }
-            }
-        }
-        return null;
     }
 
     public Scene chooseTrip(Stage primaryStage) {
@@ -1429,6 +1459,136 @@ btn8.setOnAction(eh->{
         TripsMap.put(trip2.getTrip_id(), trip2);
         TripsMap.put(trip3.getTrip_id(), trip3);
         TripsMap.put(trip4.getTrip_id(), trip4);
+    }
+     public static int findReceptionistWithMostBookings() {
+        Map<Integer, Integer> receptionistBookingsCount = new HashMap<>();
+        for (Booking booking : Booking.getBook().values()) {
+            int receptionistId = booking.getReceptionist_id();
+            receptionistBookingsCount.put(receptionistId, receptionistBookingsCount.getOrDefault(receptionistId, 0) + 1);
+        }
+        int maxBookings = 0;
+        int receptionistWithMostBookings = -1;
+
+        for (Map.Entry<Integer, Integer> entry : receptionistBookingsCount.entrySet()) {
+            int receptionistId = entry.getKey();
+            int bookingsCount = entry.getValue();
+
+            if (bookingsCount > maxBookings) {
+                maxBookings = bookingsCount;
+                receptionistWithMostBookings = receptionistId;
+            }
+        }
+
+        return receptionistWithMostBookings;
+    }
+  
+  public static int findReceptionistWithMostRevenue() {
+    HashMap<Integer, Double> receptionistRevenueMap = new HashMap<>();
+
+    for (Booking booking : book.values()) {
+        int receptionistId = booking.getReceptionist_id();
+        double revenue = booking.gettotal_price();
+
+        if (receptionistRevenueMap.containsKey(receptionistId)) {
+            receptionistRevenueMap.put(receptionistId, receptionistRevenueMap.get(receptionistId) + revenue);
+        } else {
+            receptionistRevenueMap.put(receptionistId, revenue);
+        }
+    }
+    int receptionistWithMostRevenue = -1;
+    double maxRevenue = 0;
+
+    for (int receptionistId : receptionistRevenueMap.keySet()) {
+        double revenue = receptionistRevenueMap.get(receptionistId);
+        if (revenue > maxRevenue) {
+            maxRevenue = revenue;
+            receptionistWithMostRevenue = receptionistId;
+        }
+    }
+
+    return receptionistWithMostRevenue;
+}
+public static int findGuestWithMostRevenue() {
+        HashMap<Integer, Double> guestRevenueMap = new HashMap<>();
+
+        for (Booking booking : book.values()) {
+            int guestId = booking.getGuest_id();
+            double revenue = booking.gettotal_price();
+
+            if (guestRevenueMap.containsKey(guestId)) {
+                guestRevenueMap.put(guestId, guestRevenueMap.get(guestId) + revenue);
+            } else {
+                guestRevenueMap.put(guestId, revenue);
+            }
+        }
+
+        int guestWithMostRevenue = -1;
+        double maxRevenue = 0;
+
+        for (int guestId : guestRevenueMap.keySet()) {
+            double revenue = guestRevenueMap.get(guestId);
+            if (revenue > maxRevenue) {
+                maxRevenue = revenue;
+                guestWithMostRevenue = guestId;
+            }
+        }
+
+        return guestWithMostRevenue;
+    }
+
+    public static int findGuestWithMostBookings() {
+        HashMap<Integer, Integer> guestBookingsMap = new HashMap<>();
+
+        for (Booking booking : book.values()) {
+            int guestId = booking.getGuest_id();
+
+            if (guestBookingsMap.containsKey(guestId)) {
+                guestBookingsMap.put(guestId, guestBookingsMap.get(guestId) + 1);
+            } else {
+                guestBookingsMap.put(guestId, 1);
+            }
+        }
+
+        int guestWithMostBookings = -1;
+        int maxBookings = 0;
+
+        for (int guestId : guestBookingsMap.keySet()) {
+            int bookingsCount = guestBookingsMap.get(guestId);
+            if (bookingsCount > maxBookings) {
+                maxBookings = bookingsCount;
+                guestWithMostBookings = guestId;
+            }
+        }
+
+        return guestWithMostBookings;
+    }
+    
+    //average revenue over a specific period of time 
+public static double calculateTotalRevenue(LocalDateTime start_Time, LocalDateTime end_Time) {
+    int booking_count = 0;
+    double total_revenues = 0;
+
+    for (Booking booking : book.values()) {
+        LocalDateTime booking_timing = booking.getBooking_time();
+        if (booking_timing.isAfter(start_Time) && booking_timing.isBefore(end_Time)) {
+            booking_count++;
+            total_revenues += booking.gettotal_price();
+        }
+    }
+
+    return total_revenues;
+}
+public static int getBookingsCountOverTimePeriod(LocalDateTime startTime, LocalDateTime endTime) {
+        int bookingCount = 0;
+
+        for (Booking booking : book.values()) {
+            LocalDateTime bookingTime = booking.getBooking_time();
+            if (bookingTime.isAfter(startTime) && bookingTime.isBefore(endTime)) {
+                bookingCount++;
+            }
+        }
+
+        return bookingCount;
     }
 
 }
