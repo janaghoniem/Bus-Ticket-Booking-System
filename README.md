@@ -7,7 +7,7 @@ The Admin is responsible for Viewing Reports/Data about Vehicles:
  - No. of Bookings over a specific period of time.
  - Most booked Vehicle (and Category it belongs to) over a specific period of time.
  - Most revenue Vehicle (and Category it belongs to) over a specific period of time.
- - 
+   
 The Admin is responsible for Managing Trips (Add - Edit - Remove - List “(Search) by any field”).
 The Admin is responsible for Viewing Reports/Data about Trips:
  - Category the Trip belongs to.
