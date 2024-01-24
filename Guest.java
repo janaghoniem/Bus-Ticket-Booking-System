@@ -167,56 +167,47 @@ public class Guest extends Users implements Serializable{
         
         //column labels
         Label bookingid = new Label("Booking ID");
-        bookingid.setTextFill(Color.web("#ffb000"));
-        bookingid.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        bookingid.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000; -fx-font-size: 20");
         bookingid.setPrefWidth(200);
         HBox.setHgrow(bookingid, Priority.ALWAYS);
         
         Label tripid = new Label("Trip ID");
-        tripid.setTextFill(Color.web("#ffb000"));
-        tripid.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        tripid.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000; -fx-font-size: 20");
         tripid.setPrefWidth(200);
         HBox.setHgrow(tripid, Priority.ALWAYS);
         
         Label recepid = new Label("Receptionist ID");
-        recepid.setTextFill(Color.web("#ffb000"));
-        recepid.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        recepid.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000; -fx-font-size: 20");
         recepid.setPrefWidth(200);
         HBox.setHgrow(recepid, Priority.ALWAYS);
         
         Label pickup = new Label("Pickup Point");
-        pickup.setTextFill(Color.web("#ffb000"));
-        pickup.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        pickup.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000; -fx-font-size: 20");
         pickup.setPrefWidth(200);
         HBox.setHgrow(pickup, Priority.ALWAYS);
         
         Label dest = new Label("Destination Point");
-        dest.setTextFill(Color.web("#ffb000"));
-        dest.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        dest.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000; -fx-font-size: 20");
         dest.setPrefWidth(220);
         HBox.setHgrow(dest, Priority.ALWAYS);
         
         Label price = new Label("Total price");
-        price.setTextFill(Color.web("#ffb000"));
-        price.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        price.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000; -fx-font-size: 20");
         price.setPrefWidth(200);
         HBox.setHgrow(price, Priority.ALWAYS);
         
         Label lplate = new Label("License Plate");
-        lplate.setTextFill(Color.web("#ffb000"));
-        lplate.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        lplate.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000; -fx-font-size: 20");
         lplate.setPrefWidth(200);
         HBox.setHgrow(lplate, Priority.ALWAYS);
         
         Label numberoftickets = new Label("Ticket Amount");
-        numberoftickets.setTextFill(Color.web("#ffb000"));
-        numberoftickets.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        numberoftickets.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000; -fx-font-size: 20");
         numberoftickets.setPrefWidth(200);
         HBox.setHgrow(numberoftickets, Priority.ALWAYS);
         
         Label arrivaldate = new Label("Arrival Date");
-        arrivaldate.setTextFill(Color.web("#ffb000"));
-        arrivaldate.setFont(Font.font("Helvetica World", FontWeight.BOLD, 20));
+        arrivaldate.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000; -fx-font-size: 20");
         arrivaldate.setPrefWidth(200);
         HBox.setHgrow(arrivaldate, Priority.ALWAYS);
         
