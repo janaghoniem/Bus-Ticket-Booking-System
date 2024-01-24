@@ -2,28 +2,21 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package JavaApplication1;
+package project.trial;
 
 import java.io.*;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.Serializable;
-import java.util.Scanner;
-import javafx.scene.image.Image;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
-import javafx.scene.layout.VBox;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  *
- * @author sarad
+ * @author jana
  */
 public  class Users implements Serializable{
     
@@ -41,8 +34,8 @@ public  class Users implements Serializable{
     protected Type position;
     private double Salary;
     private int Bonus;
-    private static Users currentUser;
-    static Map<Integer, String> usersMap = new HashMap<>();
+    public static Users currentUser;
+    static Map<Integer, Users> usersMap = new HashMap<>();
     
     
     //CONSTRUCTORS 
@@ -52,7 +45,7 @@ public  class Users implements Serializable{
         this.ID = ID;
         this.Password = Password;
         this.Name = Name;
-        usersMap.put(ID,Password);
+        usersMap.put(ID,this);
     }
     
     public Users(int ID, String Password, String Name, Type position) 
@@ -61,52 +54,66 @@ public  class Users implements Serializable{
         this.Password = Password;
         this.Name = Name;
         this.position = position;
-        usersMap.put(ID,Password);
+        usersMap.put(ID,this);
     }
     
-    
-    public Users(int ID, String Password) 
-    {
-        this.ID = ID;
-        this.Password = Password;
-    }
-    
-    
-    
-  
     //Read from Binary File solution 
-    static void readFromFile() throws FileNotFoundException
+    private void readFromFile()
     {
-        FileInputStream file = new FileInputStream("user_information.dat");
-      
-        try(ObjectInputStream ois = new ObjectInputStream(file))
-        {
-            Users.usersMap  = (Map<Integer, String>) ois.readObject();
-            System.out.println(Users.usersMap);
-            System.out.println(Users.getUsersMap());
-            ois.close(); file.close();
-        } 
-        catch(ClassNotFoundException ex)
-        {
-            System.out.println("Error opening file: " + ex.getMessage());
-        }
-        catch(IOException e) 
-        {
-            System.out.println("Error reading from file: " + e.getMessage());
+        FileInputStream file = null;
+        try {
+            file = new FileInputStream("user_information.dat");
+            while(true){
+                try(ObjectInputStream ois = new ObjectInputStream(file))
+                {
+                    Users user = (Users) ois.readObject();
+                    ois.close(); file.close();
+                }
+                catch(ClassNotFoundException ex)
+                {
+                    System.out.println("Error opening file: " + ex.getMessage());
+                }
+                catch(IOException e)
+                {
+                    System.out.println("Error reading from file: " + e.getMessage());
+                }
+                
+            } } catch (FileNotFoundException ex) {
+            Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                file.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
     
    
     //Write to Binary File solution 
-    private static void writeToFile() throws FileNotFoundException
+    private void writeToFile()
     {
-        FileOutputStream file = new FileOutputStream("user_information.dat");
-        try(ObjectOutputStream oos = new ObjectOutputStream(file))
-        {
-            oos.writeObject(new Users());
-            oos.close(); file.close();
-        } catch(IOException e) {
-            System.err.println("Error writing to file: " + e.getMessage());
+        FileOutputStream file = null;
+        try{
+            file = new FileOutputStream("user_information.dat");
+            try(ObjectOutputStream oos = new ObjectOutputStream(file))
+            {
+                for(Users u: Users.usersMap.values())
+                {
+                    oos.writeObject(new Users());
+                }
+                oos.close(); file.close();
+            } catch(IOException e) {
+                System.err.println("Error writing to file: " + e.getMessage());
+            }
+        } catch(FileNotFoundException ex) {
+            Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                file.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
     
@@ -114,50 +121,38 @@ public  class Users implements Serializable{
     //Validation Functions 
     public boolean isValidAdmin(int input_id, String input_password) throws FileNotFoundException
     {
-        Users.readFromFile();
-        String admin = usersMap.get(input_id);
-        return admin != null && admin.equals(input_password);
+        Users admin = usersMap.get(input_id);
+        return admin != null && admin.Password.equals(input_password);
     }
     
     public boolean isValidRec(int input_id, String input_password)
     {
-        String rec = usersMap.get(input_id);
-        return rec != null && rec.equals(input_password);
+        Users rec = usersMap.get(input_id);
+        return rec != null && rec.Password.equals(input_password);
     }
      
     public boolean isValidGuest(int input_id, String input_password)
     {
-        String guest = usersMap.get(input_id);
-        return guest != null && guest.equals(input_password);
+        Users guest = usersMap.get(input_id);
+        return guest != null && guest.Password.equals(input_password);
     }
     
     
     //Login Function 
-    public int Login2(int ID, String Password) throws FileNotFoundException
-    {
-        Password = Password.trim();
-        
-        if(isValidAdmin(ID,Password))
-        {
-            System.out.println("Login successfully!");
-            return 1;
-        }
-        else if(isValidRec(ID,Password))
-        {
-            System.out.println("Login successfully!");
-            return 2;
-        }
-        else if(isValidGuest(ID,Password))
-        {
-            System.out.println("Login successfully!");
-            return 3;
-        }
-        else
-        {
-            System.out.println("Faild to login!");
-            return -1;
+    public int Login2(int ID, String password) throws FileNotFoundException {
+    Users.currentUser = null; // Reset currentUser before login attempt
+
+    if (usersMap.containsKey(ID)) {
+        Users user = usersMap.get(ID);
+
+        if (user.getPassword().equals(password)) {
+            Users.currentUser = user; 
+            return user.position.ordinal();
         }
     }
+
+    return -1; 
+}
 
     
     //Setters and Getters 
@@ -194,12 +189,12 @@ public  class Users implements Serializable{
         Users.currentUser = currentUser;
     }
 
-    public static Map<Integer, String> getUsersMap() {
+    public static Map<Integer, Users> getUsersMap() {
         return usersMap;
     }
 
-    public static void setUsersMap(Map<Integer, String> usersMap) {
-        Users.usersMap = (HashMap<Integer, String>) usersMap;
+    public static void setUsersMap(Map<Integer, Users> usersMap) {
+        Users.usersMap = (HashMap<Integer, Users>) usersMap;
     }
     
     public void setSalary(double salary) {
@@ -217,14 +212,6 @@ public  class Users implements Serializable{
     
     public int getBonus() {
         return Bonus;
-    }
-    
-
-    //methods 
-    private void exit() 
-    {
-        System.out.println("Thank you for using our bus ticket booking system.");
-        System.exit(0);
     }
     
     public static void addSalaryToFile(int userId, double salary) {
@@ -247,24 +234,4 @@ public  class Users implements Serializable{
         }
     }
     
-    //Design
-    private void setSceneBackground(VBox container) {
-        String imagePath = "C:\\Users\\sarad\\Downloads\\WhatsApp Image 2024-01-10 at 08.49.41_ceed04bf.jpg";
-
-        Image backgroundImage = new Image("file:" + imagePath);
-
-        BackgroundImage background = new BackgroundImage(
-            backgroundImage,
-            BackgroundRepeat.NO_REPEAT,
-            BackgroundRepeat.NO_REPEAT,
-            BackgroundPosition.DEFAULT,
-            BackgroundSize.DEFAULT
-        );
-
-        Background backgroundWithImage = new Background(background);
-
-        container.setBackground(backgroundWithImage);
-    }
-
- 
 }

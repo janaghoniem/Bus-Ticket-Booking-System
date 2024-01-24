@@ -1,26 +1,18 @@
 
 package project.trial;
-import com.sun.javafx.logging.PlatformLogger.Level;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.Random;
 import java.io.*;
-import java.lang.System.Logger;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javafx.animation.FadeTransition;
-import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -32,42 +24,32 @@ import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.ImagePattern;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -81,26 +63,28 @@ import javafx.util.Duration;
  * @author jana
  */
 public class Admin extends Users implements manages<Admin>{
-     public static VBox vehicleTable = new VBox();
+    public static VBox vehicleTable = new VBox();
     static ScrollPane scrollPane = new ScrollPane(vehicleTable);
+    public static HBox horizontalLayoutBox = new HBox();
+    public static Scene homepage;
     
     public static final List<Users> users = new ArrayList<>();
     public static final List<Admin> admins = new ArrayList<>();
     //private static final int GUEST_PASSWORD_LENGTH = 5;
     private final StackPane stackPane = new StackPane();
-    //private static final String BACKGROUND_IMAGE_PATH = " file://C:/Users/Electronica Care/Pictures/504795_pia00135_orig_718331.jpg";
- //   private VBox selectedMenuItem; // Track the selected menu item
-private TextField searchField;  
-private ListView<String> listView;  
+   
+    private TextField searchField;  // Declare as instance variable
+    private ListView<String> listView;  // Declare as instance variable
     private static final String ACCOUNTING_FILE_PATH = "accounting.dat";
 
-    public double Salary;
-    public int Bonus;
+    protected double Salary;
+    protected int Bonus;
 
     public StackPane getStackPane() {
         return stackPane;
     }
-public Scene manageUsers() {
+    
+    public Scene manageUsers() throws FileNotFoundException {
         VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
         stackPane.getChildren().clear();
         stackPane.getChildren().add(manageUsersMenu);
@@ -111,7 +95,8 @@ public Scene manageUsers() {
         stackPane.setStyle("-fx-background-color: #358dca;"); // Set the background color of the StackPane
 
         return manageUsersScene;
-    } 
+    }
+ 
  
 private Label createStyledLabel(String text) {
     Label label = new Label(text);
@@ -120,16 +105,42 @@ private Label createStyledLabel(String text) {
 }
 
 
-public Scene HomePageScene()
+public Scene HomePageScene() throws FileNotFoundException
   {
       BorderPane pane = new BorderPane();
       pane.setStyle("-fx-background-color: #292525; -fx-background-image: url('file:/home/jana/Downloads/Project(2).jpg'); -fx-background-size: cover;");
       
+      Button logout = new Button();
+      logout.setStyle("-fx-background-color: transparent;");
+      ImageView log_out = new ImageView(new Image(new FileInputStream("/home/jana/Downloads/leave.png")));
+      log_out.setFitWidth(40);
+      log_out.setFitHeight(40);
+      logout.setGraphic(log_out);
+      
+      logout.setOnMouseEntered(eh -> 
+      {
+          logout.setCursor(Cursor.HAND);
+      });
+      
+      logout.setOnAction(eh ->
+      {
+          Alert logoutq = new Alert(AlertType.CONFIRMATION);
+          logoutq.setHeaderText(null);
+          logoutq.setContentText("Are you sure you want to log out?");
+          Optional<ButtonType> response = logoutq.showAndWait();
+          if(response.isPresent() && response.get() == ButtonType.OK)
+          {
+            Stage primaryStage = (Stage) pane.getScene().getWindow();
+            primaryStage.setScene(NewFXMain.loginscene);
+          }
+
+      });
+      
       Label welcomelbl = new Label("Welcome " + this.Name + ".");
       welcomelbl.setTextFill(Color.web("#ffb000"));
       welcomelbl.setFont(Font.font("Montserrat ", FontWeight.BOLD, 60));
-      HBox welcomebox = new HBox(welcomelbl);
-      welcomebox.setAlignment(Pos.CENTER);
+      HBox welcomebox = new HBox( 500, welcomelbl, logout);
+      welcomebox.setAlignment(Pos.TOP_RIGHT);
 
       
       try {
@@ -177,11 +188,15 @@ public Scene HomePageScene()
             
             manageUsers.setOnMouseClicked(eh ->
             {
-                Scene manageU = createManageUsersScene();
-                Stage primaryStage = (Stage) manageUsers.getScene().getWindow();
-                primaryStage.setScene(manageU);
-                primaryStage.setTitle("Bus-Ticket Booking System - Manage Users Page");
-                primaryStage.sizeToScene();
+                try {
+                    Scene manageU = createManageUsersScene();
+                    Stage primaryStage = (Stage) manageUsers.getScene().getWindow();
+                    primaryStage.setScene(manageU);
+                    primaryStage.setTitle("Bus-Ticket Booking System - Manage Users Page");
+                    primaryStage.sizeToScene();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 
             });
             
@@ -230,11 +245,15 @@ public Scene HomePageScene()
             
             manageVehicles.setOnMouseClicked(eh ->
             {
-                Scene manageV = managesVehicle();
-                Stage primaryStage = (Stage) manageVehicles.getScene().getWindow();
-                primaryStage.setScene(manageV);
-                primaryStage.setTitle("Bus-Ticket Booking System - Manage Vehicles Page");
-                primaryStage.sizeToScene();
+                try {
+                    Scene manageV = managesVehicle();
+                    Stage primaryStage = (Stage) manageVehicles.getScene().getWindow();
+                    primaryStage.setScene(manageV);
+                    primaryStage.setTitle("Bus-Ticket Booking System - Manage Vehicles Page");
+                    primaryStage.sizeToScene();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                }
             });
             
             
@@ -280,6 +299,19 @@ public Scene HomePageScene()
                 downUponExit(manageTrips);
             });
             
+            manageTrips.setOnMouseClicked(eh -> 
+            {
+                try {
+                    Scene manageT = managesTrips();
+                    Stage primaryStage = (Stage) manageVehicles.getScene().getWindow();
+                    primaryStage.setScene(manageT);
+                    primaryStage.setTitle("Bus-Ticket Booking System - Manage Vehicles Page");
+                    primaryStage.sizeToScene();
+                } catch (IOException ex) {
+                    Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            
             HBox box = new HBox(20, manageUsers, manageVehicles, manageTrips);
             box.setAlignment(Pos.CENTER);
             Insets in = new Insets(50);
@@ -292,22 +324,25 @@ public Scene HomePageScene()
       }
       
      
-      Scene homepage = new Scene(pane, Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight());
+      homepage = new Scene(pane, Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight());
       return homepage;
   }
-  private void upUponHover(StackPane pane)
+  
+  public static void upUponHover(StackPane pane)
   {
     TranslateTransition up = new TranslateTransition(Duration.millis(200), pane);
     up.setByY(-10);
     up.play();
   }
   
-  private void downUponExit(StackPane pane)
+  public static void downUponExit(StackPane pane)
   {
     TranslateTransition down = new TranslateTransition(Duration.millis(200), pane);
     down.setByY(10);
+    pane.setTranslateY(0);
     down.play();
   }
+  
     public Admin(){
 
     }
@@ -349,20 +384,23 @@ public Scene HomePageScene()
     public static List<Users> getUsers() {
         return users;
     }
-public Scene createManageUsersScene() {
+    
+    public Scene createManageUsersScene() throws FileNotFoundException {
         VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+        manageUsersMenu.setStyle("-fx-background-color: #292525; -fx-background-image: url('file:/home/jana/Downloads/backtrial.jpg'); -fx-background-size: cover;");
         stackPane.getChildren().clear();
         stackPane.getChildren().add(manageUsersMenu);
         setSceneBackground(manageUsersMenu);
 
-        Scene manageUsersScene = new Scene(stackPane, 600, 400);
+        Scene manageUsersScene = new Scene(stackPane, Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight());
         manageUsersScene.setFill(Color.rgb(135, 206, 250)); // Set the background color of the scene
         stackPane.setStyle("-fx-background-color: #358dca;"); // Set the background color of the StackPane
 
         return manageUsersScene;
     }
-private void setSceneBackground(VBox container) {
-    String imagePath = "C:\\Users\\Electronica Care\\Pictures\\Screenshots\\Screenshot 2024-01-13 074436.png";
+
+    private void setSceneBackground(VBox container) {
+    String imagePath = "/home/jana/Downloads/backtrial.jpg";
 
     Image backgroundImage = new Image("file:" + imagePath);
 
@@ -379,7 +417,7 @@ private void setSceneBackground(VBox container) {
     container.setBackground(backgroundWithImage);
 }
 
-public void ManageUsers() {
+public void ManageUsers() throws FileNotFoundException {
 
     VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
     stackPane.getChildren().clear();
@@ -392,62 +430,125 @@ public Label createtheStyledLabel(String text) {
     styledLabel.setStyle("-fx-font-size: 40; -fx-font-weight: bold; -fx-text-fill: white;");
     return styledLabel;
 }
-private VBox createManageUsersPane(Label welcomeLabel) {
-    VBox manageUsersMenu = new VBox(20);
-    manageUsersMenu.setAlignment(Pos.TOP_LEFT);
-    manageUsersMenu.setPadding(new Insets(30, 0, 0, 30));
-HBox welcomeBox = new HBox(welcomeLabel);
-    welcomeBox.setAlignment(Pos.TOP_LEFT);
-    welcomeBox.setPadding(new Insets(0, 0, 20, 0));  // Add padding to separate from searchField
-    manageUsersMenu.getChildren().add(welcomeBox);
 
-    searchField = new TextField();  
-    searchField.setPromptText("Search Users");
-    searchField.setStyle("-fx-font-size: 15; -fx-background-color: rgba(0, 0, 0, 0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-border-width: 3px");
-    searchField.setMaxWidth(500);
-    searchField.setMinWidth(500);
+    private VBox createManageUsersPane(Label welcomeLabel) throws FileNotFoundException {
 
-    listView = new ListView<>();  
-    listView.setMaxHeight(100);
-    listView.setMinWidth(300);
-    listView.setVisible(false);
-    listView.setStyle("-fx-background-color: transparent; -fx-border-color: #ca7235;");
+            VBox manageUsersMenu = new VBox(20);
+            manageUsersMenu.setStyle("-fx-background-color: #292525; -fx-background-image: url('file:/home/jana/Downloads/backtrial.jpg'); -fx-background-size: cover;");
+            manageUsersMenu.setAlignment(Pos.CENTER);
+            manageUsersMenu.setPadding(new Insets(30, 0, 0, 30));
+            
+            Button logout = new Button();
+            logout.setStyle("-fx-background-color: transparent;");
+            ImageView log_out = new ImageView(new Image(new FileInputStream("/home/jana/Downloads/leave.png")));
+            log_out.setFitWidth(40);
+            log_out.setFitHeight(40);
+            logout.setGraphic(log_out);
+            
+            logout.setOnMouseEntered(eh ->
+            {
+                logout.setCursor(Cursor.HAND);
+            });
+            
+            logout.setOnAction(eh ->
+            {
+                Alert logoutq = new Alert(Alert.AlertType.CONFIRMATION);
+                logoutq.setHeaderText(null);
+                logoutq.setContentText("Are you sure you want to log out?");
+                Optional<ButtonType> response = logoutq.showAndWait();
+                if(response.isPresent() && response.get() == ButtonType.OK)
+                {
+                    Stage primaryStage = (Stage) manageUsersMenu.getScene().getWindow();
+                    primaryStage.setScene(NewFXMain.loginscene);
+                    primaryStage.setTitle("Bus-Ticket Booking System - Login Page");
+                }
+            });
+            
+            Button home = new Button();
+            home.setStyle("-fx-background-color: transparent;");
+            ImageView homee = new ImageView(new Image(new FileInputStream("/home/jana/Downloads/home.png")));
+            homee.setFitWidth(40);
+            homee.setFitHeight(40);
+            home.setGraphic(homee);
+            
+            home.setOnMouseEntered(eh ->
+            {
+                home.setCursor(Cursor.HAND);
+            });
+            
+            home.setOnAction(eh -> {
+                Alert homeq = new Alert(Alert.AlertType.CONFIRMATION);
+                homeq.setHeaderText(null);
+                homeq.setContentText("Are you sure you want to return to homepage?");
+                Optional<ButtonType> response = homeq.showAndWait();
+                if(response.isPresent() && response.get() == ButtonType.OK)
+                {
+                    Stage primaryStage = (Stage) manageUsersMenu.getScene().getWindow();
+                    primaryStage.setScene(homepage);
+                }
+            });
+            
+            HBox buttons = new HBox(2,logout, home );
+            
+            HBox welcomeBox = new HBox(900, welcomeLabel, buttons);
+            welcomeBox.setAlignment(Pos.TOP_RIGHT);
+            welcomeBox.setPadding(new Insets(0, 0, 20, 0));  // Add padding to separate from searchField
+            manageUsersMenu.getChildren().add(welcomeBox);
+            
+            searchField = new TextField();
+            searchField.setPromptText("Search Users");
+            searchField.setStyle("-fx-font-size: 15; -fx-background-color: rgba(0, 0, 0, 0); -fx-text-fill: #ffb000; -fx-border-color: #ffb000; -fx-border-width: 3px");
+            searchField.setMaxWidth(500);
+            searchField.setMinWidth(500);
+            
+            listView = new ListView<>();
+            listView.setMaxHeight(100);
+            listView.setMinWidth(300);
+            listView.setVisible(false);
+            listView.setStyle("-fx-background-color: transparent; -fx-border-color: #ca7235;");
+            
+            searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                search();
+            });
+            
+            HBox buttonBox = new HBox(
+                    createStyledButton("Add User", event -> add()),
+                    createStyledButton("Remove User", event -> remove()),
+                    createStyledButton("Add Salary To User", event -> {
+                try {
+                    handleAddSalary();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }),
+                    createStyledButton("Add Bonus to User", event -> handleAddBonus()),
+                    createStyledButton("Display User Reports", event -> handleDisplayUsers()),
+                    createStyledButton("Display Booking Reports", event -> handleDisplayBookings()),
+                    createStyledButton("Edit User", event -> {
+                        edit();
+                        Button closeButton = createStyledButton("Close", closeEvent -> {
+                            stackPane.getChildren().clear();
+                            stackPane.getChildren().add(manageUsersMenu);
+                            setSceneBackground(manageUsersMenu);
+                        });
+                        HBox closeBox = new HBox(closeButton);
+                        closeBox.setAlignment(Pos.CENTER);
+                        closeBox.setPadding(new Insets(10, 0, 0, 0));
+                        manageUsersMenu.getChildren().addAll(closeBox);
+                    })
+            );
+            buttonBox.setAlignment(Pos.CENTER);
+            buttonBox.setSpacing(10);
+            
+            manageUsersMenu.getChildren().addAll(
+                    welcomeLabel,
+                    searchField,
+                    buttonBox,
+                    listView
+            );
+            
+            return manageUsersMenu;
 
-    searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-        search(); 
-    });
-
-    HBox buttonBox = new HBox(
-            createStyledButton("Add User", event -> add()),
-            createStyledButton("Remove User", event -> remove()),
-            createStyledButton("Add Salary To User", event -> handleAddSalary()),
-            createStyledButton("Add Bonus to User", event -> handleAddBonus()),
-            createStyledButton("User Reports", event -> handleDisplayUsers()),
-            createStyledButton("Booking Reports", event -> handleDisplayBookings()),
-            createStyledButton("Edit User", event -> {
-                edit();
-                Button closeButton = createStyledButton("Close", closeEvent -> {
-                    stackPane.getChildren().clear();
-                    stackPane.getChildren().add(manageUsersMenu);
-                    setSceneBackground(manageUsersMenu);
-                });
-                HBox closeBox = new HBox(closeButton);
-                closeBox.setAlignment(Pos.CENTER);
-                closeBox.setPadding(new Insets(10, 0, 0, 0));
-                manageUsersMenu.getChildren().addAll(closeBox);
-            })
-    );
-    buttonBox.setAlignment(Pos.CENTER);
-    buttonBox.setSpacing(10);
-
-    manageUsersMenu.getChildren().addAll(
-            welcomeLabel,
-            searchField,
-            buttonBox,
-            listView
-    );
-
-    return manageUsersMenu;
 }
 public Button createStyledButton(String text, EventHandler<ActionEvent> action) {
     Button button = new Button(text);
@@ -460,33 +561,43 @@ public Button createStyledButton(String text, EventHandler<ActionEvent> action) 
 }
 
 
-private void handleAddSalary() {
-    HBox addSalaryBox = new HBox(10);
-    addSalaryBox.setAlignment(Pos.CENTER);
-
-    Label welcomeLabel = createStyledLabel("Add Salary");
-    welcomeLabel.setStyle("-fx-font-size: 24;");
-
-    TextField userIdField = createStyledTextField("User ID");
-    TextField salaryField = createStyledTextField("Salary");
-
-    Button addSalaryBtn = new Button("Add Salary");
-    addSalaryBtn.setOnAction(event -> handleAddSalaryAction(userIdField, salaryField, addSalaryBox, welcomeLabel));
-
-    Button closeButton = new Button("Close");
-    closeButton.setOnAction(closeEvent -> ManageUsers());
-
-    addSalaryBox.getChildren().addAll(
-            userIdField,
-            salaryField,
-            addSalaryBtn,
-            closeButton
-    );
-
-    VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
-    manageUsersMenu.getChildren().add(addSalaryBox);
-
-    updateStack(manageUsersMenu);
+private void handleAddSalary() throws FileNotFoundException {
+        try {
+            HBox addSalaryBox = new HBox(10);
+            addSalaryBox.setAlignment(Pos.CENTER);
+            
+            Label welcomeLabel = createStyledLabel("Add Salary");
+            welcomeLabel.setStyle("-fx-font-size: 24;");
+            
+            TextField userIdField = createStyledTextField("User ID");
+            TextField salaryField = createStyledTextField("Salary");
+            
+            Button addSalaryBtn = new Button("Add Salary");
+            addSalaryBtn.setOnAction(event -> handleAddSalaryAction(userIdField, salaryField, addSalaryBox, welcomeLabel));
+            
+            Button closeButton = new Button("Close");
+            closeButton.setOnAction(closeEvent -> {
+                try {
+                    ManageUsers();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            
+            addSalaryBox.getChildren().addAll(
+                    userIdField,
+                    salaryField,
+                    addSalaryBtn,
+                    closeButton
+            );
+            
+            VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+            manageUsersMenu.getChildren().add(addSalaryBox);
+            
+            updateStack(manageUsersMenu);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+        }
 }
 
 private void saveAccountingInformation(int userId, double salary, int bonus) {
@@ -531,32 +642,42 @@ private void handleAddSalaryAction(TextField userId, TextField salary, HBox pare
     }
 
 private void handleAddBonus() {
-    HBox addBonusBox = new HBox(10);
-    addBonusBox.setAlignment(Pos.CENTER);
-
-    Label welcomeLabel = createStyledLabel("Add Bonus");
-    welcomeLabel.setStyle("-fx-font-size: 24;");
-
-    TextField userIdField = createStyledTextField("User ID");
-    TextField bonusField = createStyledTextField("Bonus");
-
-    Button addBonusBtn = new Button("Add Bonus");
-    addBonusBtn.setOnAction(event -> handleAddBonusAction(userIdField, bonusField, addBonusBox, welcomeLabel));
-
-    Button closeButton = new Button("Close");
-    closeButton.setOnAction(closeEvent -> ManageUsers());
-
-    addBonusBox.getChildren().addAll(
-            userIdField,
-            bonusField,
-            addBonusBtn,
-            closeButton
-    );
-
-    VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
-    manageUsersMenu.getChildren().add(addBonusBox);
-
-    updateStack(manageUsersMenu);
+        try {
+            HBox addBonusBox = new HBox(10);
+            addBonusBox.setAlignment(Pos.CENTER);
+            
+            Label welcomeLabel = createStyledLabel("Add Bonus");
+            welcomeLabel.setStyle("-fx-font-size: 24;");
+            
+            TextField userIdField = createStyledTextField("User ID");
+            TextField bonusField = createStyledTextField("Bonus");
+            
+            Button addBonusBtn = new Button("Add Bonus");
+            addBonusBtn.setOnAction(event -> handleAddBonusAction(userIdField, bonusField, addBonusBox, welcomeLabel));
+            
+            Button closeButton = new Button("Close");
+            closeButton.setOnAction(closeEvent -> {
+                try {
+                    ManageUsers();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            
+            addBonusBox.getChildren().addAll(
+                    userIdField,
+                    bonusField,
+                    addBonusBtn,
+                    closeButton
+            );
+            
+            VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+            manageUsersMenu.getChildren().add(addBonusBox);
+            
+            updateStack(manageUsersMenu);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+        }
 }
 private void handleAddBonusAction(TextField userId, TextField bonus, HBox parentBox, Label welcomeLabel) {
     try {
@@ -590,7 +711,10 @@ private void updateStack(Pane pane) {
     System.out.println("update stack sha8al"); 
 
     VBox stackContainer = new VBox();
-    setSceneBackground(stackContainer); 
+    stackContainer.setStyle("-fx-background-color: #292525; -fx-background-image: url('file:/home/jana/Downloads/backtrial.jpg'); -fx-background-size: cover;");
+    stackContainer.setAlignment(Pos.TOP_CENTER);
+    setSceneBackground(stackContainer); // Set the background image
+
     stackContainer.getChildren().add(pane);
     stackPane.getChildren().clear();
     stackPane.getChildren().add(stackContainer);
@@ -598,12 +722,6 @@ private void updateStack(Pane pane) {
 
 
 private void handleDisplayBookings() {
-    // Assuming that the existing VBox in the Manage Users pane is accessible
-    VBox manageUsersPane = (VBox) stackPane.getChildren().get(0);
-
-    // Clear existing items before adding new ones
-    manageUsersPane.getChildren().clear();
-
     Label mostBookedTripLabel = createStyledLabel("Most Booked Trip: " +
             (Trips.mostBookedTrip() != null ? Trips.mostBookedTrip().toString() : "No trips available"));
     setLabelStyles(mostBookedTripLabel);
@@ -681,6 +799,12 @@ private void handleDisplayBookings() {
     VBox bookingCountDateSelectionBox = new VBox(10, bookingCountStartDatePicker, bookingCountEndDatePicker, bookingCountOKButton);
     bookingCountDateSelectionBox.setAlignment(Pos.CENTER);
 
+    // Assuming that the existing VBox in the Manage Users pane is accessible
+    VBox manageUsersPane = (VBox) stackPane.getChildren().get(0);
+
+    // Clear existing labels before adding new ones
+    manageUsersPane.getChildren().removeIf(node -> node instanceof Label);
+
     // Add the dateSelectionBoxes and labels above the existing buttons
     manageUsersPane.getChildren().addAll(
             mostBookedTripLabel,
@@ -692,9 +816,12 @@ private void handleDisplayBookings() {
             bookingCountDateSelectionBox,
             bookingCountResultLabel
     );
+}
 
-    // Update the stack with the modified manageUsersPane
-    updateStack(manageUsersPane);
+
+private void setLabelStyles(Label label) {
+    label.setTextFill(Color.WHITE);
+    label.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-size: 20; -fx-font-weight: bold;");
 }
 
 private void handleDisplayUsers() {
@@ -724,49 +851,51 @@ private void handleDisplayUsers() {
             receptionistRevenueLabel,
             guestRevenueLabel
     );
-    
 }
 
-private void setLabelStyles(Label label) {
-    label.setTextFill(Color.WHITE);
-    label.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-size: 20; -fx-font-weight: bold;");
-}
 
 public static void readUsersFromFile() {
-    try (DataInputStream dis = new DataInputStream(new FileInputStream("user_information.dat"))) {
-        int numUsers = dis.readInt();
+    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("user_information.dat"))) {
+        users.clear(); // Clear existing users before reading from file
+        int numUsers = ois.readInt();
         for (int i = 0; i < numUsers; i++) {
-            int id = dis.readInt();
-            String name = dis.readUTF();
-            String password = dis.readUTF(); // Read password
-
-            Type userType = Type.RECEPTIONIST;  // Set the type to RECEPTIONIST
-            if ("AdminName".equals(name)) {
-                userType = Type.ADMIN;  // Set the type to ADMIN for the admin user
-            }
-
-            Users user = new Users(id, password, name, userType);
+            Users user = (Users) ois.readObject();
             users.add(user);
+            Users.usersMap.put(user.ID, user);
+            if(user.position.ordinal() == 0)
+            {
+                Admin a = new Admin(user.ID, user.Password, user.Name);
+                admins.add(a);
+            }
+            
+            else if(user.position.ordinal() == 1)
+            {
+                Receptionist r = new Receptionist(user.ID, user.Password, user.Name);
+                Receptionist.storeReceptionistInfo(r);
+            }
+            
+            else if(user.position.ordinal() == 2)
+            {
+                Guest g = new Guest(user.ID, user.Password, user.Name);
+                Guest.guests.put(g.ID, g);
+            }
+            
         }
         System.out.println("User information loaded from file.");
     } catch (FileNotFoundException e) {
         // Handle file not found exception
-    } catch (IOException e) {
+    } catch (IOException | ClassNotFoundException e) {
         System.out.println("Error reading user information from file: " + e.getMessage());
     }
 }
 
-
 public static void saveUsersToFile() {
-    try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("user_information.dat", false))) {
-        dos.writeInt(users.size());
+    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("user_information.dat", false))) {
+        oos.writeInt(users.size());
         for (Users user : users) {
-            dos.writeInt(user.getID());
-            dos.writeUTF(user.getName());
-            dos.writeUTF(user.getPassword()); // Save password
+            oos.writeObject(user);
         }
         System.out.println("User information saved to file.");
-        //saveAdminsToFile();
     } catch (IOException e) {
         System.out.println("Error saving user information to file: " + e.getMessage());
     }
@@ -801,6 +930,17 @@ public static String generateGuestPassword() {
     return passwordBuilder.toString();
 }
 
+  
+/*/public boolean findUser(int id, String name) {
+    for (Users currentUser : users) {
+        if (currentUser.getID() == id || currentUser.getName().equals(name)) {
+            return true; 
+        }
+    }
+    return false; 
+}
+*/
+
     public void addSalary(int userId, double salary) {
                 readUsersFromFile();
         super.setSalary(salary);
@@ -814,35 +954,92 @@ public static String generateGuestPassword() {
     }
  
 
-    public static Scene managesVehicle()
+    public static Scene managesVehicle() throws FileNotFoundException
     {
+        Vehicle.listlabelsinitialization();
+        vehicleTable.getChildren().add(Vehicle.listlabels);
         FlowPane vehicleSceneLayout = new FlowPane();
         vehicleSceneLayout.setStyle("-fx-background-color: #292525; -fx-background-image: url('file:/home/jana/Downloads/backtrial.jpg'); -fx-background-size: cover;");
         vehicleSceneLayout.setOrientation(Orientation.VERTICAL);
         vehicleSceneLayout.setAlignment(Pos.TOP_LEFT);
         
+        Button logout = new Button();
+        logout.setStyle("-fx-background-color: transparent;");
+        ImageView log_out = new ImageView(new Image(new FileInputStream("/home/jana/Downloads/leave.png")));
+        log_out.setFitWidth(40);
+        log_out.setFitHeight(40);
+        logout.setGraphic(log_out);
+      
+        logout.setOnMouseEntered(eh -> 
+        {
+            logout.setCursor(Cursor.HAND);
+        });
+      
+        logout.setOnAction(eh ->
+        {
+          Alert logoutq = new Alert(Alert.AlertType.CONFIRMATION);
+          logoutq.setHeaderText(null);
+          logoutq.setContentText("Are you sure you want to log out?");
+          Optional<ButtonType> response = logoutq.showAndWait();
+          if(response.isPresent() && response.get() == ButtonType.OK)
+          {
+            Stage primaryStage = (Stage) vehicleSceneLayout.getScene().getWindow();
+            primaryStage.setScene(NewFXMain.loginscene);
+            primaryStage.setTitle("Bus-Ticket Booking System - Login Page");
+          }
+        });
         
+        Button home = new Button();
+        home.setStyle("-fx-background-color: transparent;");
+        ImageView homee = new ImageView(new Image(new FileInputStream("/home/jana/Downloads/home.png")));
+        homee.setFitWidth(40);
+        homee.setFitHeight(40);
+        home.setGraphic(homee);
+      
+        home.setOnMouseEntered(eh -> 
+        {
+            home.setCursor(Cursor.HAND);
+        });
+      
+        home.setOnAction(eh ->
+        {
+          Alert homeq = new Alert(Alert.AlertType.CONFIRMATION);
+          homeq.setHeaderText(null);
+          homeq.setContentText("Are you sure you want to return to homepage?");
+          Optional<ButtonType> response = homeq.showAndWait();
+          if(response.isPresent() && response.get() == ButtonType.OK)
+          {
+              Stage primaryStage = (Stage) vehicleSceneLayout.getScene().getWindow();
+              primaryStage.setScene(homepage);
+          }
+        });
+        
+        HBox buttons = new HBox(2,logout, home );
+        buttons.setAlignment(Pos.TOP_RIGHT);
+                
         //IMAGES & ICONS
         try {
-            Image icon = new Image(new FileInputStream("C:/Users/Electronica Care/Pictures/504795_pia00135_orig_718331.jpg"));
-// IMAGEVIEW FOR THE ICON
-ImageView imageView = new ImageView(icon);
-imageView.setFitHeight(30);
-imageView.setPreserveRatio(true);
-
+            Image icon = new Image(new FileInputStream("/home/jana/Downloads/magnifier(2).png"));
+            //IMAGEVIEW FOR THE ICON
+            ImageView imageView = new ImageView(icon);
+            imageView.setFitHeight(30); 
+            imageView.setPreserveRatio(true);  
             
             //LABELS
             Label manageVehiclesLabel = new Label();
             manageVehiclesLabel.setText("MANAGE VEHICLES");
             manageVehiclesLabel.setTextFill(Color.web("#ffb000"));
             manageVehiclesLabel.setFont(Font.font("Helvetica World", FontWeight.BOLD, 60));
-                        
+            HBox top = new HBox(1000,manageVehiclesLabel, buttons );
+            buttons.setAlignment(Pos.TOP_RIGHT);
+                       
+            
             //VBOX
             scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; ");             
-            scrollPane.setFitToHeight(true);
+            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+            scrollPane.setMaxHeight(550);
             vehicleTable.setSpacing(10);
             vehicleTable.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
-            Vehicle.readFromFile();
 
             
             //TEXTFIELDS
@@ -854,12 +1051,19 @@ imageView.setPreserveRatio(true);
             searchBar.setFont(Font.font("Helvetica World", FontWeight.BOLD, 15));
             HBox.setHgrow(searchBar, Priority.ALWAYS);
             
+            searchBar.setOnKeyTyped(eh -> 
+            {
+                Vehicle v = new Vehicle();
+                v.search();
+            });
+            
             //ADD BUTTON
             Button addVehicle = new Button("Add Vehicle");
             addVehicle.setTextFill(Color.web("#0a0c26"));
             addVehicle.setStyle("-fx-background-color: #ffb000; -fx-border-color: #ffb000;");
             addVehicle.setFont(Font.font("Helvetica World", FontWeight.BOLD, 19));
             addVehicle.setPrefWidth(200);
+            addVehicle.setCursor(Cursor.HAND);
             HBox.setHgrow(addVehicle, Priority.ALWAYS);
 
             
@@ -872,14 +1076,14 @@ imageView.setPreserveRatio(true);
             
             //COMBO BOX
             ObservableList o;
-            o = FXCollections.observableArrayList("License Plate", "Category", "Number of Seats", "Price per Seat", "Driver's Name");
+            o = FXCollections.observableArrayList("General","License Plate", "Category", "Number of Seats", "Price per Seat", "Driver's Name", "Date Purchased");
             ComboBox searchBy = new ComboBox(o);
             searchBy.setStyle("-fx-background-color: #ffb000; -fx-border-color: #ffb000;");
             searchBy.setMaxWidth(200);
             searchBy.setValue("Search by...");
+            searchBy.setCursor(Cursor.HAND);
             HBox.setHgrow(searchBy, Priority.ALWAYS);
             
-            HBox horizontalLayoutBox = new HBox();
             HBox.setHgrow(horizontalLayoutBox, Priority.ALWAYS);
             
             horizontalLayoutBox.getChildren().addAll(addVehicle, searchBar, searchVehicle, searchBy);
@@ -887,93 +1091,40 @@ imageView.setPreserveRatio(true);
             horizontalLayoutBox.setMaxHeight(100);
             horizontalLayoutBox.setAlignment(Pos.BASELINE_LEFT);
            
-            //ANIMATION (TRANSLATION??) OF ADD BUTTON SLIDING PANEL
-
-
-                        
             //ADDING ELEMENTS TO LAYOUT
-            vehicleSceneLayout.getChildren().addAll(manageVehiclesLabel, horizontalLayoutBox, Vehicle.addlayout, scrollPane);
+            vehicleSceneLayout.getChildren().addAll(top, horizontalLayoutBox, Vehicle.addlayout,Vehicle.listlabels ,scrollPane);
             
             //SET ALIGNMENT
             vehicleSceneLayout.setVgap(10);
             vehicleSceneLayout.setPadding(new javafx.geometry.Insets(40, 40, 40, 40));
             
-            
-        
             //EVENT-HANDLING
             addVehicle.setOnAction(e ->
             {
                 Vehicle.addlayoutInitialization();
-            });
-            
-            
+            });  
 
         } catch (FileNotFoundException e) {
             System.out.println(e);
         }
-        Scene vehicleScene = new Scene(vehicleSceneLayout, 800, 800);
+        
+        Scene vehicleScene = new Scene(vehicleSceneLayout, Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight());
         return vehicleScene;
     }
     
     
-   /* public static void managesTrips() throws IOException
+    public static Scene managesTrips() throws IOException
     {
         Trips t = new Trips();
-        boolean continueEditing = true;
-        String con;
-        while(continueEditing)
-        {
-        Scanner n = new Scanner(System.in);
-        System.out.println("What would you like to do: ");
-        System.out.println("1. Add trip");
-        System.out.println("2. Remove trip");
-        System.out.println("3. Edit trip");
-        System.out.println("4. Search by field");   
-        System.out.println("5. Display available trip");
-        switch (n.nextInt())
-        {
-                case(1): { 
-                    t.add();
-                    break;
-                }
-                case(2): {
-                                     
-                    t.remove();
-                    break;
-                }
-                case(3): {
-                    t.edit();
-                    break;
-                }
-                case(4): {
-                    t.search();
-                    break;
-                }
-                case (5): {
-                    Trips.ViewTrips();
-                    break;
-                }
-            }
-        
-            Trips.writeToFile();
-            System.out.println("Would you like to return to manageTrips main menu?");
-            con = n.next();
-            if(!con.equalsIgnoreCase("yes") && !con.equalsIgnoreCase("no"))
-            {
-                System.out.println("Invalid input. Please enter 'yes' if you want to return to manageTrips main menu or 'no' if you want to exit");
-            }
-            else if(con.equalsIgnoreCase("no"))
-            {
-                continueEditing = false;
-            }
-        }    
-    }*/
+        Scene scene = t.createMainScene();
+        return scene;
+    }
     
     
-   @Override
+@Override
 public void add() {
     VBox addPane = new VBox();
-    String imagePath = "file:" + Paths.get("C:/Users/Electronica Care/Pictures/Screenshots/Screenshot 2024-01-13 074436.png").toUri().toString();
+    String imagePath = "file:" + Paths.get("file:home/jana/Downloads/Project(6).png").toUri().toString();
     addPane.setStyle("-fx-background-image: url('" + imagePath + "'); -fx-background-size: cover;");
 
     Label welcomeLabel = new Label();
@@ -1013,6 +1164,8 @@ public void add() {
                         } else {
                             Users newUser = new Users(id, password, name, userType);
                             users.add(newUser);
+                            Admin a = new Admin(newUser.ID, newUser.Password, newUser.Name);
+                            admins.add(a);
                             saveUsersToFile();
 if (userType == Type.RECEPTIONIST && newUser instanceof Receptionist) {
                             Receptionist.storeReceptionistInfo((Receptionist) newUser);
@@ -1036,15 +1189,19 @@ if (userType == Type.RECEPTIONIST && newUser instanceof Receptionist) {
     });
 
     Button goBackBtn = createStyledButton("Go Back", event -> {
-        stackPane.getChildren().clear();
-        stackPane.getChildren().add(welcomeLabel);
-         VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
-
-    updateStack(manageUsersMenu);
+        try {
+            stackPane.getChildren().clear();
+            stackPane.getChildren().add(welcomeLabel);
+            VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+            
+            updateStack(manageUsersMenu);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+        }
     });
     goBackBtn.setStyle("-fx-font-size: 12; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
 
-    VBox vbox = new VBox(20); 
+    VBox vbox = new VBox(10); // Adjusted spacing
     vbox.setAlignment(Pos.CENTER);
 
     vbox.getChildren().addAll(goBackBtn, idField, nameField, passwordField, userTypeComboBox, addUserBtn, usersListView);
@@ -1096,173 +1253,195 @@ private void updateListView(ListView<String> usersListView) {
 
    @Override
 public void remove() {
-    Label welcomeLabel = new Label();
-
-    TextField idField = createStyledTextField("User ID");
-    TextField nameField = createStyledTextField("User Name");
-
-    Button removeUserBtn = createStyledButton("Remove User", event -> {
-        String idText = idField.getText();
-        String name = nameField.getText();
-
-        if (idText.isEmpty() || name.isEmpty()) {
-            showAlert("Error", "Please fill in all fields.", Alert.AlertType.ERROR);
-        } else {
-            try {
-                int id = Integer.parseInt(idText);
-
-                //readUsersFromFile(); // Moved this line to ensure data is up-to-date
-
-                boolean found = userExists(id, name);
-
-                if (found) {
-                    users.removeIf(currentUser -> currentUser.getID() == id && currentUser.getName().equals(name));
-                    System.out.println("User removed successfully!");
-                    saveUsersToFile();
-                    updateStack(createManageUsersPane(welcomeLabel));
+        try {
+            Label welcomeLabel = new Label();
+            
+            TextField idField = createStyledTextField("User ID");
+            TextField nameField = createStyledTextField("User Name");
+            
+            Button removeUserBtn = createStyledButton("Remove User", event -> {
+                String idText = idField.getText();
+                String name = nameField.getText();
+                
+                if (idText.isEmpty() || name.isEmpty()) {
+                    showAlert("Error", "Please fill in all fields.", Alert.AlertType.ERROR);
                 } else {
-                    showAlert("Error", "User doesn't exist", Alert.AlertType.ERROR);
+                    try {
+                        int id = Integer.parseInt(idText);
+                        
+                        //readUsersFromFile(); // Moved this line to ensure data is up-to-date
+                        
+                        boolean found = userExists(id, name);
+                        
+                        if (found) {
+                            users.removeIf(currentUser -> currentUser.getID() == id && currentUser.getName().equals(name));
+                            System.out.println("User removed successfully!");
+                            saveUsersToFile();
+                            try {
+                                updateStack(createManageUsersPane(welcomeLabel));
+                            } catch (FileNotFoundException ex) {
+                                Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        } else {
+                            showAlert("Error", "User doesn't exist", Alert.AlertType.ERROR);
+                        }
+                    } catch (NumberFormatException e) {
+                        showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+                    } catch (RuntimeException e) {
+                        showAlert("Error", "Error removing user: " + e.getMessage(), Alert.AlertType.ERROR);
+                    }
                 }
-            } catch (NumberFormatException e) {
-                showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
-            } catch (RuntimeException e) {
-                showAlert("Error", "Error removing user: " + e.getMessage(), Alert.AlertType.ERROR);
-            }
+            });
+            
+            Button goBackBtn = createStyledButton("close", event -> {
+                try {
+                    stackPane.getChildren().clear();
+                    stackPane.getChildren().add(welcomeLabel);
+                    updateStack(createManageUsersPane(welcomeLabel));
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            goBackBtn.setStyle("-fx-font-size: 12; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
+            
+            HBox removeUserBox = new HBox(10);
+            removeUserBox.setAlignment(Pos.CENTER);
+            
+            removeUserBox.getChildren().addAll(goBackBtn, idField, nameField, removeUserBtn);
+            VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+            manageUsersMenu.getChildren().addAll(removeUserBox);
+            
+            updateStack(manageUsersMenu);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
         }
-    });
-
-    Button goBackBtn = createStyledButton("close", event -> {
-        stackPane.getChildren().clear();
-        stackPane.getChildren().add(welcomeLabel);
-        updateStack(createManageUsersPane(welcomeLabel));
-    });
-    goBackBtn.setStyle("-fx-font-size: 12; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
-
-    HBox removeUserBox = new HBox(10);
-    removeUserBox.setAlignment(Pos.CENTER);
-
-    removeUserBox.getChildren().addAll(goBackBtn, idField, nameField, removeUserBtn);
-    VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
-    manageUsersMenu.getChildren().addAll(removeUserBox);
-
-    updateStack(manageUsersMenu);
 }
 
 
 @Override
 public void edit() {
-    VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
-    manageUsersMenu.setAlignment(Pos.CENTER);
-
-    Label editLabel = createStyledLabel("Edit User");
-    editLabel.setStyle("-fx-font-size: 24;");
-    editLabel.setAlignment(Pos.CENTER);
-
-    TextField userIdField = createStyledTextField("User ID");
-    TextField userNameField = createStyledTextField("User Name");
-
-    VBox editContainer = new VBox(); // Container for edit items
-    editContainer.setAlignment(Pos.CENTER);
-    editContainer.setSpacing(20);
-
-    Button editUserBtn = createStyledButton("Edit User", event -> {
         try {
-            int id = Integer.parseInt(userIdField.getText());
-            String name = userNameField.getText();
-
-            if (!userExists(id, name)) {
-                showAlert("Error", "User does not exist.", Alert.AlertType.ERROR);
-            } else {
-                TextField newUserId = createStyledTextField("New User ID");
-                TextField newUserName = createStyledTextField("New User Name");
-
-                Button saveChangesBtn = createStyledButton("Save Changes", saveEvent -> {
-                    try {
-                        int newUserIdValue = Integer.parseInt(newUserId.getText());
-                        if (userExists(newUserIdValue, newUserName.getText())) {
-                            showAlert("Error", "User with the new ID and name already exists.", Alert.AlertType.ERROR);
-                        } else {
+            VBox manageUsersMenu = createManageUsersPane(createStyledLabel("Manage Users"));
+            manageUsersMenu.setStyle("-fx-background-color: #292525; -fx-background-image: url('file:/home/jana/Downloads/backtrial.jpg'); -fx-background-size: cover;");
+            
+            manageUsersMenu.setAlignment(Pos.CENTER);
+            
+            Label editLabel = createStyledLabel("Edit User");
+            editLabel.setStyle("-fx-font-size: 24;");
+            editLabel.setAlignment(Pos.CENTER);
+            
+            TextField userIdField = createStyledTextField("User ID");
+            TextField userNameField = createStyledTextField("User Name");
+            
+            VBox editContainer = new VBox(); // Container for edit items
+            editContainer.setAlignment(Pos.CENTER);
+            editContainer.setSpacing(20);
+            
+            Button editUserBtn = createStyledButton("Edit User", event -> {
+                try {
+                    int id = Integer.parseInt(userIdField.getText());
+                    String name = userNameField.getText();
+                    
+                    if (!userExists(id, name)) {
+                        showAlert("Error", "User does not exist.", Alert.AlertType.ERROR);
+                    } else {
+                        TextField newUserId = createStyledTextField("New User ID");
+                        TextField newUserName = createStyledTextField("New User Name");
+                        
+                        Button saveChangesBtn = createStyledButton("Save Changes", saveEvent -> {
                             try {
-
-                                Optional<Users> userToEdit = users.stream()
-                                        .filter(u -> u.getID() == id && u.getName().equals(name))
-                                        .findFirst();
-
-                                if (userToEdit.isPresent()) {
-                                    if (!userExists(newUserIdValue, newUserName.getText())) {
-                                        Users editedUser = userToEdit.get();
-                                        editedUser.setID(newUserIdValue);
-                                        editedUser.setName(newUserName.getText());
-
-                                        //saveUsersToFile();
-                                        showAlert("Success", "User updated successfully.", Alert.AlertType.INFORMATION);
-                                        editContainer.getChildren().clear();
-                                    } else {
-                                        throw new RuntimeException("New ID or name already exists. Please choose unique values.");
-                                    }
+                                int newUserIdValue = Integer.parseInt(newUserId.getText());
+                                if (userExists(newUserIdValue, newUserName.getText())) {
+                                    showAlert("Error", "User with the new ID and name already exists.", Alert.AlertType.ERROR);
                                 } else {
-                                    throw new RuntimeException("User not found.");
+                                    try {
+                                        
+                                        Optional<Users> userToEdit = users.stream()
+                                                .filter(u -> u.getID() == id && u.getName().equals(name))
+                                                .findFirst();
+                                        
+                                        if (userToEdit.isPresent()) {
+                                            if (!userExists(newUserIdValue, newUserName.getText())) {
+                                                Users editedUser = userToEdit.get();
+                                                editedUser.setID(newUserIdValue);
+                                                editedUser.setName(newUserName.getText());
+                                                
+                                                //saveUsersToFile();
+                                                showAlert("Success", "User updated successfully.", Alert.AlertType.INFORMATION);
+                                                editContainer.getChildren().clear();
+                                            } else {
+                                                throw new RuntimeException("New ID or name already exists. Please choose unique values.");
+                                            }
+                                        } else {
+                                            throw new RuntimeException("User not found.");
+                                        }
+                                    } catch (RuntimeException e) {
+                                        System.out.println("Error editing user: " + e.getMessage());
+                                    }
                                 }
-                            } catch (RuntimeException e) {
-                                System.out.println("Error editing user: " + e.getMessage());
+                            } catch (NumberFormatException e) {
+                                showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
                             }
-                        }
-                    } catch (NumberFormatException e) {
-                        showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+                        });
+                        
+                        GridPane gridPane = new GridPane();
+                        gridPane.setAlignment(Pos.CENTER);
+                        gridPane.setHgap(10); // Set horizontal gap between elements
+                        gridPane.setVgap(10); // Set vertical gap between elements
+                        
+                        // Add elements to the grid
+                        gridPane.add(new Label("New User ID:"), 0, 0);
+                        gridPane.add(newUserId, 1, 0);
+                        gridPane.add(new Label("New User Name:"), 0, 1);
+                        gridPane.add(newUserName, 1, 1);
+                        gridPane.add(saveChangesBtn, 0, 2, 2, 1); // Span the button across two columns
+                        
+                        // Clear the editContainer and add the gridPane
+                        editContainer.getChildren().clear();
+                        editContainer.getChildren().add(gridPane);
                     }
-                });
-
-                GridPane gridPane = new GridPane();
-                gridPane.setAlignment(Pos.CENTER);
-                gridPane.setHgap(10); // Set horizontal gap between elements
-                gridPane.setVgap(10); // Set vertical gap between elements
-
-                // Add elements to the grid
-                gridPane.add(new Label("New User ID:"), 0, 0);
-                gridPane.add(newUserId, 1, 0);
-                gridPane.add(new Label("New User Name:"), 0, 1);
-                gridPane.add(newUserName, 1, 1);
-                gridPane.add(saveChangesBtn, 0, 2, 2, 1); // Span the button across two columns
-
-                // Clear the editContainer and add the gridPane
-                editContainer.getChildren().clear();
-                editContainer.getChildren().add(gridPane);
-            }
-        } catch (NumberFormatException e) {
-            showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+                } catch (NumberFormatException e) {
+                    showAlert("Error", "Invalid ID format. Please enter a valid integer.", Alert.AlertType.ERROR);
+                }
+            });
+            
+            Button closeButton = createStyledButton("Close", closeEvent -> {
+                try {
+                    ManageUsers();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            closeButton.setStyle("-fx-font-size: 12; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
+            
+            HBox editUserBox = new HBox(20,
+                    userIdField,
+                    userNameField,
+                    editUserBtn
+            );
+            editUserBox.setAlignment(Pos.CENTER);
+            
+            VBox combinedEditBox = new VBox(); // Container for combined edit and editUserAction items
+            combinedEditBox.getChildren().addAll(
+                    editUserBox,
+                    editContainer // This container will hold items added by handleEditUserAction
+            );
+            combinedEditBox.setAlignment(Pos.CENTER);
+            combinedEditBox.setSpacing(20);
+            
+            manageUsersMenu.getChildren().addAll(
+                    editLabel,
+                    combinedEditBox,
+                    closeButton
+            );
+            
+            updateStack(manageUsersMenu);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
         }
-    });
-
-   Button closeButton = createStyledButton("Close", closeEvent -> {
-    ManageUsers();
-   });
-   closeButton.setStyle("-fx-font-size: 12; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
-
-    HBox editUserBox = new HBox(20,
-            userIdField,
-            userNameField,
-            editUserBtn
-    );
-    editUserBox.setAlignment(Pos.CENTER);
-
-    VBox combinedEditBox = new VBox(); // Container for combined edit and editUserAction items
-    combinedEditBox.getChildren().addAll(
-            editUserBox,
-            editContainer // This container will hold items added by handleEditUserAction
-    );
-    combinedEditBox.setAlignment(Pos.CENTER);
-    combinedEditBox.setSpacing(20);
-
-    manageUsersMenu.getChildren().addAll(
-            editLabel,
-            combinedEditBox,
-            closeButton
-    );
-
-    updateStack(manageUsersMenu);
 }
 
-@Override
+     @Override
 public void search() {
     String searchTerm = searchField.getText().trim().toLowerCase();
 
@@ -1289,7 +1468,7 @@ public void search() {
     }
 
     listView.setVisible(true);
-}
 
+}
 
 }

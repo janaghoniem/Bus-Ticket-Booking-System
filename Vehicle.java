@@ -26,6 +26,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -238,12 +239,17 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         Button saveButton = new Button("SAVE");
         saveButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
         saveButton.setPrefWidth(100);
+        saveButton.setCursor(Cursor.HAND);
+        
         Button cancelButton = new Button("CANCEL");
         cancelButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
         cancelButton.setPrefWidth(100);
+        cancelButton.setCursor(Cursor.HAND);
+        
         Button clearButton = new Button("CLEAR");
         clearButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
-        clearButton.setPrefWidth(100);            
+        clearButton.setPrefWidth(100);   
+        clearButton.setCursor(Cursor.HAND);
             
         addlayout.add(LicensePlate, 0, 0);
         addlayout.add(LicensePlateString, 1, 0);
@@ -523,10 +529,12 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         Button applyButton = new Button("APPLY");
         applyButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
         applyButton.setPrefWidth(100);
+        applyButton.setCursor(Cursor.HAND);
                 
         Button cancelButton = new Button("CANCEL");
         cancelButton.setStyle("-fx-background-color: #ffb000;-fx-text-fill: #0a0c26; -fx-border-color: #ffb000; -fx-border-radius: 5;"); 
         cancelButton.setPrefWidth(100);
+        cancelButton.setCursor(Cursor.HAND);
         
         GridPane editpane = new GridPane();
         editpane.add(LicensePlate, 0, 0);
@@ -757,16 +765,6 @@ public class Vehicle implements manages<Vehicle>, Serializable {
         }
     }
     
-//    public static void displayVehicles() throws FileNotFoundException {
-//    
-//        Admin.vehicleTable.getChildren().clear();
-//    
-//        for (Vehicle v : VehicleList.values()) {
-//            v.rowDisplay();
-//        }
-//    }
-
-
     public void rowDisplay()
     {
         try {
@@ -820,13 +818,16 @@ public class Vehicle implements manages<Vehicle>, Serializable {
             Button editButton = new Button();
             editButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
             editButton.setGraphic(editimageView);
+            editButton.setCursor(Cursor.HAND);
             
             Button deleteButton = new Button();
             deleteButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
             deleteButton.setGraphic(deleteimageView);
+            deleteButton.setCursor(Cursor.HAND);
             
             Button viewReportButton = new Button("View Report");
             viewReportButton.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+            viewReportButton.setCursor(Cursor.HAND);
             //viewReportButton.setGraphic(reportimageView);
             
             String normalStyle = "-fx-text-fill: white; -fx-background-color: rgba(0, 0, 0, 0);";
@@ -888,11 +889,13 @@ public class Vehicle implements manages<Vehicle>, Serializable {
     {
         for(Trips t: Trips.TripsMap.values())
         {
+            System.out.println("trip");
             for(Vehicle v: VehicleList.values())
             {
                 if(t.getVehicle_id().equalsIgnoreCase(v.License_plate))
                 {
                     v.num_of_available_seats = v.Number_of_seats;
+                    System.out.println("av:" + v.num_of_available_seats);
                     AvailibilityMap.put(t.getTrip_id(), v.num_of_available_seats);
                 }
             }
