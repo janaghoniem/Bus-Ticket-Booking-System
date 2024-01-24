@@ -4,9 +4,7 @@
  */
 package project.trial;
 
-import java.io.DataInputStream;
-import java.io.Serializable;
-import java.io.DataOutputStream;
+import java.util.Random;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,147 +14,57 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
-import java.io.StreamCorruptedException;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Scanner;
-import java.util.Map;
-import java.util.InputMismatchException;
-import java.time.format.DateTimeParseException;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DateCell;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.stage.Modality;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StreamCorruptedException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
-import javafx.animation.ParallelTransition;
-import javafx.animation.PathTransition;
-import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
-import javafx.animation.TranslateTransition;
-import javafx.application.Application;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.ImagePattern;
 import javafx.stage.Stage;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
-import javafx.scene.effect.BlendMode;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
-import javafx.scene.shape.Path;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import javax.swing.BorderFactory;
+import static project.trial.Admin.homepage;
 import project.trial.Trips.Destination;
-import project.trial.Vehicle.vehicleCategory;
-import project.trial.Vehicle;
 
 /**
  *
@@ -267,7 +175,6 @@ public class Trips implements manages, Serializable {
     private static final long serialVersionUID = 6159440674871578737L;
     private int trip_id;                     //unique *
     private String vehicle_id;
-    private transient Vehicle vehicle;
     private Destination From_Destination;
     private Destination To_Destination;
     private String From_BusStop;
@@ -282,6 +189,8 @@ public class Trips implements manages, Serializable {
     private transient LocalDate ArrivalDate;
     private transient LocalDate DepartureDate;
     public transient int countTrips = 0;
+    public int countRatings;
+    private double averageRating;
 
     private transient String labelStyle = "-fx-text-fill: #F0F0F0;";
     private transient Font boldFont = Font.font("Arial", FontWeight.BOLD, 18);
@@ -314,6 +223,7 @@ public class Trips implements manages, Serializable {
         this.DepartureTime = DepartureTime;
         this.ArrivalDateTime = ArrivalDateTime;
         this.DepartureDateTime = DepartureDateTime;
+        TripsMap.put(trip_id, this);
     }
 
     public Trips(int trip_id, String vehicle_id, Destination From_Destination, Destination To_Destination, String From_BusStop, String To_BusStop, double price, LocalDateTime ArrivalDateTime, LocalDateTime DepartureDateTime) {  //*
@@ -326,6 +236,7 @@ public class Trips implements manages, Serializable {
         this.price = price;
         this.ArrivalDateTime = ArrivalDateTime;
         this.DepartureDateTime = DepartureDateTime;
+        TripsMap.put(trip_id, this);
     }
 
 //Setters & Getters
@@ -377,12 +288,20 @@ public class Trips implements manages, Serializable {
         this.countTrips = countTrips;
     }
 
-    public Vehicle getVehicle() {    //*
-        return vehicle;
+    public int getCountRatings() {
+        return countRatings;
     }
 
-    public void setVehicle(Vehicle vehicle) {   //*
-        this.vehicle = vehicle;
+    public void setCountRatings(int countRatings) {
+        this.countRatings = countRatings;
+    }
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(double averageRating) {
+        this.averageRating = averageRating;
     }
 
     public Destination getFrom_Destination() { //*
@@ -965,12 +884,70 @@ public class Trips implements manages, Serializable {
         }
     }
 
-    private Scene createMainScene() {
+    public Scene createMainScene() throws FileNotFoundException {
 
         Label manageTrips = new Label("Manage Trips");
         manageTrips.setTextFill(Color.web("#ffb000"));
         manageTrips.setFont(Font.font("Montserrat ", FontWeight.BOLD, 60));
         manageTrips.setAlignment(Pos.TOP_LEFT);
+        
+        Button logout = new Button();
+        logout.setStyle("-fx-background-color: transparent;");
+        ImageView log_out = new ImageView(new Image(new FileInputStream("/home/jana/Downloads/leave.png")));
+        log_out.setFitWidth(40);
+        log_out.setFitHeight(40);
+        logout.setGraphic(log_out);
+      
+        logout.setOnMouseEntered(eh -> 
+        {
+            logout.setCursor(Cursor.HAND);
+        });
+      
+        logout.setOnAction(eh ->
+        {
+          Alert logoutq = new Alert(Alert.AlertType.CONFIRMATION);
+          logoutq.setHeaderText(null);
+          logoutq.setContentText("Are you sure you want to log out?");
+          Optional<ButtonType> response = logoutq.showAndWait();
+          if(response.isPresent() && response.get() == ButtonType.OK)
+          {
+            Stage primaryStage = (Stage) manageTrips.getScene().getWindow();
+            primaryStage.setScene(NewFXMain.loginscene);
+            primaryStage.setTitle("Bus-Ticket Booking System - Login Page");
+          }
+        });
+        
+        Button home = new Button();
+        home.setStyle("-fx-background-color: transparent;");
+        ImageView homee = new ImageView(new Image(new FileInputStream("/home/jana/Downloads/home.png")));
+        homee.setFitWidth(40);
+        homee.setFitHeight(40);
+        home.setGraphic(homee);
+      
+        home.setOnMouseEntered(eh -> 
+        {
+            home.setCursor(Cursor.HAND);
+        });
+      
+        home.setOnAction(eh ->
+        {
+          Alert homeq = new Alert(Alert.AlertType.CONFIRMATION);
+          homeq.setHeaderText(null);
+          homeq.setContentText("Are you sure you want to return to homepage?");
+          Optional<ButtonType> response = homeq.showAndWait();
+          if(response.isPresent() && response.get() == ButtonType.OK)
+          {
+              Stage primaryStage = (Stage) manageTrips.getScene().getWindow();
+              primaryStage.setScene(homepage);
+          }
+        });
+        
+        HBox buttons = new HBox(2,logout, home );
+        buttons.setAlignment(Pos.TOP_RIGHT);
+        
+        HBox top = new HBox(900,manageTrips, buttons);
+        
+        
 // delete button
         Button deleteAllButton = new Button("Delete All Trips");
         deleteAllButton.setTextFill(Color.web("#0a0c26"));
@@ -1009,7 +986,7 @@ public class Trips implements manages, Serializable {
             vbox.getChildren().add(DisplayTrips(searchTerm));
         });
         // Row 3 
-        VBox layout = new VBox(10, manageTrips, row1, row2, vbox);
+        VBox layout = new VBox(10, top, row1, row2, vbox);
         deleteAllButton.setOnAction(e ->
         {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -1038,18 +1015,16 @@ public class Trips implements manages, Serializable {
         layout.setPadding(new Insets(15));
         layout.setAlignment(Pos.TOP_LEFT);
         addTripsButton.setOnAction(event -> add());
-        Image backgroundImage = new Image("file:///C:/Users/Roaa/Downloads/WhatsApp Image 2024-01-13 at 19.47.43_6b37a660.jpg");
+        Image backgroundImage = new Image("file:/home/jana/Downloads/backtrial.jpg')");
         ImageView backgroundView = new ImageView(backgroundImage);
-//        backgroundView.setFitWidth(1200);
-//        backgroundView.setFitHeight(500);
         layout.setStyle("-fx-background-color: transparent;");
         Pane pane = new Pane(backgroundView, layout);
-        pane.setStyle("-fx-background-color: transparent;");
+        pane.setStyle("-fx-background-color: #292525; -fx-background-image: url('file:/home/jana/Downloads/backtrial.jpg'); -fx-background-size: cover;");
         pane.setBackground(Background.EMPTY);
 
         vbox.setStyle("-fx-background-color: transparent;");
 
-        return new Scene(pane, 1200, 500);
+        return new Scene(pane, Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight());
     }   //check   
 
     
@@ -1707,19 +1682,19 @@ public class Trips implements manages, Serializable {
                 });
                 t.setPrice(priceSpinner.getValue().intValue());
                 boolean valid = true;
-                for (Trips tr : Trips.TripsMap.values())
-                {
-                    if (t.equals(tr))
-                    {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Error");
-                        alert.setHeaderText(null);
-                        alert.setContentText("A trip with the same details already exists #" + tr.getTrip_id());
-                        alert.showAndWait();
-                        valid = false;
-                        break;
-                    }
-                }
+//                for (Trips tr : Trips.TripsMap.values())
+//                {
+//                    if (t.equals(tr))
+//                    {
+//                        Alert alert = new Alert(Alert.AlertType.ERROR);
+//                        alert.setTitle("Error");
+//                        alert.setHeaderText(null);
+//                        alert.setContentText("A trip with the same details already exists #" + tr.getTrip_id());
+//                        alert.showAndWait();
+//                        valid = false;
+//                        break;
+//                    }
+//                }
                 if (valid)
                 {
                     Trips.TripsMap.put(tripID, t);
