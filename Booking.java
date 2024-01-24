@@ -950,18 +950,6 @@ public String toString() {
         root1.setVgap(10);
         root1.setPadding(new Insets(20));
         
-//        String backgroundImageFile = "file:///C:/Users/Electronica Care/Pictures/Screenshots/Screenshot 2024-01-13 074436.png";
-//        Image backgroundImage = new Image(backgroundImageFile);
-//        BackgroundSize backgroundSize = new BackgroundSize(windowWidth, windowHeight, false, false, true, true);
-//        BackgroundImage background = new BackgroundImage(
-//            backgroundImage,
-//            BackgroundRepeat.NO_REPEAT,
-//            BackgroundRepeat.NO_REPEAT,
-//            BackgroundPosition.DEFAULT,
-//            backgroundSize
-//    );
-    //root1.setBackground(new Background(background));
-
     Label lbl24 = new Label("Manage Bookings");
     lbl24.setTextFill(Color.WHITE);
     lbl24.setStyle("-fx-font-family: 'Helvetica World'; -fx-font-size: 35; -fx-font-weight: bold;");
@@ -981,7 +969,6 @@ public String toString() {
         Button backBtn = new Button("Back");
                     backBtn.setStyle("-fx-font-size: 15; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
 
-        Button cancelBtn = new Button("Cancel");
         Button exitBtn = new Button("Exit");
             exitBtn.setStyle("-fx-font-size: 15; -fx-background-color: #ffb000; -fx-text-fill: #0a0c26;");
 
@@ -1096,17 +1083,7 @@ btn8.setOnAction(eh->{
         root1.add(btn8, 2, 1);
         root1.add(backBtn, 9, 0);
         root1.add(buttons, 10, 0);
-        root1.add(cancelBtn, 2, 2);
         ScrollPane scrollPane = new ScrollPane(bookingsVBox);
-        cancelBtn.setOnAction(event -> {
-            for (Node node : bookingsVBox.getChildren()) {
-                if (node instanceof HBox) {
-                    HBox bookingHBox = (HBox) node;
-                    bookingHBox.setVisible(true);
-                }
-            }
-
-        });
 
         HBox propertyNamesHBox = new HBox(10);
         Label bookIdLabel = new Label(String.format("%-10s", "Book ID"));
@@ -1125,7 +1102,7 @@ btn8.setOnAction(eh->{
         Label receptionistIdLabel = new Label(String.format("%-30s", "Receptionist ID"));
         
         
-String labelFontStyle = "-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000;";
+    String labelFontStyle = "-fx-font-family: 'Helvetica World'; -fx-font-weight: bold; -fx-text-fill: #ffb000;";
     bookIdLabel.setStyle(labelFontStyle);
     guestNameLabel.setStyle(labelFontStyle);
     guestIdLabel.setStyle(labelFontStyle);
@@ -1218,12 +1195,12 @@ String labelFontStyle = "-fx-font-family: 'Helvetica World'; -fx-font-weight: bo
         }
         bookingsVBox.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        scrollPane.setFitToHeight(true);
      
         root1.add(scrollPane, 0, 2, 3, 4); // Adjusted row and column indices for ScrollPane
 
         primaryStage.setTitle("Existing Bookings");
         primaryStage.setScene(scene4);
-     //   root1.setBackground(new Background(background));
         return scene4;
     }
 
