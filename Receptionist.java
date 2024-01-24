@@ -103,7 +103,7 @@ public class Receptionist extends Users {
       welcomelbl.setTextFill(Color.web("#ffb000"));
       welcomelbl.setFont(Font.font("Montserrat ", FontWeight.BOLD, 60));
       HBox welcomebox = new HBox(400, welcomelbl, logout);
-      welcomebox.setAlignment(Pos.CENTER);
+      welcomebox.setAlignment(Pos.TOP_RIGHT);
 
       
       try {
