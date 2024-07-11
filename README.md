@@ -50,3 +50,5 @@ The Receptionist is responsible for Managing Bookings for Guests:
 The Guest should be able to View history of his Bookings:
  - View all his bookings’ details.
  - Rate their booking.
+
+UML: https://app.creately.com/d/YfdkEhcwoQm/view
