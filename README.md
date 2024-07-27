@@ -43,7 +43,7 @@ The Admin is responsible for Viewing Reports/Data about Bookings:
    
 The Receptionist is responsible for Managing Bookings for Guests:
  - Create Booking.
- - Select Category and Guest’s Preferences in choosing the Booking (Select Trip Details).
+ - Select Category and Guest’s Preferences in choosing the Booking (Select Trip Details)..
  - Cancel Booking.
  - Calculate Payment.
    
